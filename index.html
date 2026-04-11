@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- Блокируем принудительную темную тему на мобильных устройствах -->
-    <meta name="color-scheme" content="light">
     <title>Тренажёр ЕГЭ Обществознание: Задание 21 (EXPERT)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -12,7 +10,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         
         html, body {
-            color-scheme: light; /* Гарантируем светлую тему */
             height: 100dvh;
             overflow: hidden;
             font-family: 'Inter', sans-serif;
@@ -428,11 +425,6 @@
 
     function drawGraph() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Принудительно заливаем холст белым цветом для защиты от инверсии цветов
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
         ctx.beginPath(); ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 2;
         for(let i=1; i<12; i++) { let y = config.originY - i*40; let x = config.originX + i*60; ctx.moveTo(config.originX, y); ctx.lineTo(canvas.width-10, y); ctx.moveTo(x, config.originY); ctx.lineTo(x, 10); }
         ctx.stroke();
@@ -573,8 +565,18 @@
     async function fetchWithRetry(url, options, retries = 5) {
         const delays = [1000, 2000, 4000, 8000, 16000];
         for (let i = 0; i < retries; i++) {
-            try { const response = await fetch(url, options); if (!response.ok) throw new Error(); return await response.json(); } 
-            catch (error) { if (i === retries - 1) throw error; await new Promise(res => setTimeout(res, delays[i])); }
+            try { 
+                const response = await fetch(url, options); 
+                if (!response.ok) {
+                    const errText = await response.text();
+                    throw new Error(`HTTP ${response.status}: ${errText}`);
+                }
+                return await response.json(); 
+            } 
+            catch (error) { 
+                if (i === retries - 1) throw error; 
+                await new Promise(res => setTimeout(res, delays[i])); 
+            }
         }
     }
 
@@ -587,7 +589,11 @@
         const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
         try {
             const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            const data = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
+            
+            let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+            rawText = rawText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(rawText);
+            
             const updateCrit = (elId, isPassed) => {
                 const el = document.getElementById(elId); const icon = el.querySelector('i');
                 icon.className = isPassed ? 'fas fa-check-circle text-xs md:text-sm text-green-500 mt-0.5' : 'fas fa-times-circle text-xs md:text-sm text-red-500 mt-0.5';
@@ -600,7 +606,11 @@
             els.aiScoreBadge.textContent = isPerfect ? 'Макс. балл' : 'Ошибка (0)';
             els.aiScoreBadge.className = isPerfect ? 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500' : 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-red-500';
             els.aiLoading.classList.add('hidden'); els.aiResultBox.classList.remove('hidden'); els.aiResultBox.classList.add('fade-in');
-        } catch (error) { alert("Ошибка сервера."); els.aiLoading.classList.add('hidden'); } 
+        } catch (error) { 
+            console.error("AI Check Error:", error);
+            alert("Ошибка при проверке экспертом: " + error.message); 
+            els.aiLoading.classList.add('hidden'); 
+        } 
         finally { els.btnAiCheck.disabled = false; }
     });
 
