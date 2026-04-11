@@ -659,7 +659,7 @@
         const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
         
         try {
-            const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             
             let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
             rawText = rawText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
