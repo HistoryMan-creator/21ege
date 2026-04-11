@@ -57,6 +57,24 @@
 </head>
 <body class="text-gray-800 flex flex-col">
 
+    <!-- API KEY MODAL -->
+    <div id="api-key-modal" class="fixed inset-0 bg-black/80 z-[150] hidden flex-col justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full text-center fade-in">
+            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center text-3xl mb-4">
+                <i class="fas fa-key"></i>
+            </div>
+            <h2 class="text-xl font-extrabold text-gray-800 mb-2">Требуется API Ключ</h2>
+            <p class="text-xs text-gray-500 mb-5 leading-relaxed">
+                Для работы нейросети вставьте ключ <b>Google Gemini</b>. Ключ сохранится только в вашем браузере.
+            </p>
+            <input type="password" id="api-key-input" class="w-full border-2 border-gray-200 rounded-xl p-3 mb-4 focus:border-purple-500 focus:outline-none text-sm text-center font-mono" placeholder="AIzaSy...">
+            <button id="btn-save-key" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-transform transform active:scale-95 w-full">
+                Сохранить и начать
+            </button>
+            <button id="btn-close-key-modal" class="mt-3 text-xs text-gray-400 hover:text-gray-600 underline hidden">Отмена</button>
+        </div>
+    </div>
+
     <!-- BREAK MODAL (ВИДЕО ОТДЫХ) -->
     <div id="break-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col justify-center items-center">
         <div id="break-text-screen" class="flex flex-col items-center justify-center fade-in text-center px-4">
@@ -143,7 +161,11 @@
                 <i class="fas fa-graduation-cap text-lg md:text-xl text-purple-300"></i>
                 <h1 class="text-sm md:text-lg font-bold tracking-tight">Задание 21</h1>
             </div>
-            <div class="flex items-center gap-2 md:gap-6">
+            <div class="flex items-center gap-2 md:gap-4">
+                <!-- Кнопка настроек API ключа -->
+                <button id="btn-open-settings" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-2 md:px-2.5 py-1 text-[10px] md:text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95" title="Настройки API">
+                    <i class="fas fa-cog"></i><span class="hidden sm:inline"> Ключ</span>
+                </button>
                 <button id="btn-open-guide" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-2.5 py-1 text-[10px] md:text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95">
                     <i class="fas fa-book-open"></i> <span class="hidden sm:inline">Памятка факторов</span><span class="sm:hidden">Теория</span>
                 </button>
@@ -327,7 +349,64 @@
     </main>
 
 <script>
-    const apiKey = "AIzaSyA1MxM7Xlz-lZk3ma1e127GQSZJyfzH1rw";
+    // Инициализация API ключа из локального хранилища браузера
+    let apiKey = localStorage.getItem('gemini_api_key') || "";
+
+    const els = {
+        counter: document.getElementById('scenario-counter'), score: document.getElementById('score-counter'),
+        market: document.getElementById('task-market'), curveDesc: document.getElementById('task-curve-desc'), curveOther: document.getElementById('task-curve-other'),
+        q3Scenario: document.getElementById('q3-scenario-text'),
+        q1Radios: document.querySelectorAll('input[name="q1"]'), q1Fb: document.getElementById('q1-feedback'),
+        q2Input: document.getElementById('q2-input'), btnAiCheck: document.getElementById('btn-ai-check'), btnQ2Ideal: document.getElementById('btn-check-q2-ideal'),
+        aiLoading: document.getElementById('ai-loading'), aiResultBox: document.getElementById('ai-result-box'), aiScoreBadge: document.getElementById('ai-score-badge'), aiComment: document.getElementById('ai-comment-text'),
+        q2IdealBox: document.getElementById('q2-ideal-box'), q2Factor: document.getElementById('q2-ans-factor'), q2Exp: document.getElementById('q2-ans-explanation'),
+        q3ShiftBtns: document.querySelectorAll('.q3-btn[data-ans*="_"]'), q3PriceBtns: document.querySelectorAll('.q3-btn[data-ans="up"], .q3-btn[data-ans="down"]'),
+        btnCheckQ3: document.getElementById('btn-check-q3'), q3Fb: document.getElementById('q3-feedback'),
+        btnNext: document.getElementById('btn-next-scenario'), btnReset: document.getElementById('btn-reset-graph'),
+        breakModal: document.getElementById('break-modal'), breakTextScreen: document.getElementById('break-text-screen'), breakVideoScreen: document.getElementById('break-video-screen'), breakVideo: document.getElementById('break-video'), btnCloseBreak: document.getElementById('btn-close-break'),
+        easterEggModal: document.getElementById('easter-egg-modal'), btnCloseEasterEgg: document.getElementById('btn-close-easter-egg'),
+        guideModal: document.getElementById('guide-modal'), btnOpenGuide: document.getElementById('btn-open-guide'), btnCloseGuide: document.getElementById('btn-close-guide'),
+        
+        // Элементы модального окна для API
+        apiKeyModal: document.getElementById('api-key-modal'),
+        apiKeyInput: document.getElementById('api-key-input'),
+        btnSaveKey: document.getElementById('btn-save-key'),
+        btnOpenSettings: document.getElementById('btn-open-settings'),
+        btnCloseKeyModal: document.getElementById('btn-close-key-modal')
+    };
+
+    // --- Логика управления ключом API ---
+    if (!apiKey) {
+        els.apiKeyModal.classList.remove('hidden');
+        els.apiKeyModal.classList.add('flex');
+    }
+
+    els.btnOpenSettings.onclick = () => {
+        els.apiKeyInput.value = apiKey; // Показываем текущий ключ, если есть
+        els.btnCloseKeyModal.classList.remove('hidden'); // Показываем кнопку отмены, так как ключ может уже быть
+        els.apiKeyModal.classList.remove('hidden');
+        els.apiKeyModal.classList.add('flex');
+    };
+
+    els.btnSaveKey.onclick = () => {
+        const val = els.apiKeyInput.value.trim();
+        if (val) {
+            apiKey = val;
+            localStorage.setItem('gemini_api_key', apiKey);
+            els.apiKeyModal.classList.add('hidden');
+            els.apiKeyModal.classList.remove('flex');
+        } else {
+            alert('Пожалуйста, введите ключ.');
+        }
+    };
+
+    els.btnCloseKeyModal.onclick = () => {
+        if(apiKey) { // Позволяем закрыть только если ключ уже задан
+            els.apiKeyModal.classList.add('hidden');
+            els.apiKeyModal.classList.remove('flex');
+        }
+    };
+    // ------------------------------------
 
     const scenarios = [
         { market: "рынок легковых автомобилей", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Рост доходов потребителей", q2_explanation: "В связи с экономическим подъемом реальные доходы населения выросли. Люди стали чаще покупать новые машины, что привело к росту спроса на рынке легковых автомобилей.", q3_text: "Как изменятся предложение и равновесная цена на данном рынке, если государство увеличит налоги на производителей автомобилей при прочих равных условиях?", q3_ans: "S_down" },
@@ -468,22 +547,6 @@
         }
     }
 
-    const els = {
-        counter: document.getElementById('scenario-counter'), score: document.getElementById('score-counter'),
-        market: document.getElementById('task-market'), curveDesc: document.getElementById('task-curve-desc'), curveOther: document.getElementById('task-curve-other'),
-        q3Scenario: document.getElementById('q3-scenario-text'),
-        q1Radios: document.querySelectorAll('input[name="q1"]'), q1Fb: document.getElementById('q1-feedback'),
-        q2Input: document.getElementById('q2-input'), btnAiCheck: document.getElementById('btn-ai-check'), btnQ2Ideal: document.getElementById('btn-check-q2-ideal'),
-        aiLoading: document.getElementById('ai-loading'), aiResultBox: document.getElementById('ai-result-box'), aiScoreBadge: document.getElementById('ai-score-badge'), aiComment: document.getElementById('ai-comment-text'),
-        q2IdealBox: document.getElementById('q2-ideal-box'), q2Factor: document.getElementById('q2-ans-factor'), q2Exp: document.getElementById('q2-ans-explanation'),
-        q3ShiftBtns: document.querySelectorAll('.q3-btn[data-ans*="_"]'), q3PriceBtns: document.querySelectorAll('.q3-btn[data-ans="up"], .q3-btn[data-ans="down"]'),
-        btnCheckQ3: document.getElementById('btn-check-q3'), q3Fb: document.getElementById('q3-feedback'),
-        btnNext: document.getElementById('btn-next-scenario'), btnReset: document.getElementById('btn-reset-graph'),
-        breakModal: document.getElementById('break-modal'), breakTextScreen: document.getElementById('break-text-screen'), breakVideoScreen: document.getElementById('break-video-screen'), breakVideo: document.getElementById('break-video'), btnCloseBreak: document.getElementById('btn-close-break'),
-        easterEggModal: document.getElementById('easter-egg-modal'), btnCloseEasterEgg: document.getElementById('btn-close-easter-egg'),
-        guideModal: document.getElementById('guide-modal'), btnOpenGuide: document.getElementById('btn-open-guide'), btnCloseGuide: document.getElementById('btn-close-guide')
-    };
-
     function loadScenario(idx) {
         const s = scenarios[idx]; els.counter.textContent = `${idx + 1}/30`; els.market.textContent = s.market; 
         if (s.shiftType === 'D') { els.curveDesc.textContent = "D переместилась в положение D1"; els.curveOther.textContent = "S"; } 
@@ -581,14 +644,22 @@
     }
 
     els.btnAiCheck.addEventListener('click', async () => {
+        if (!apiKey) {
+            els.btnOpenSettings.click();
+            return;
+        }
+
         const userAnswer = els.q2Input.value.trim();
         if (!userAnswer) return alert('Пожалуйста, напиши свой ответ перед проверкой!');
+        
         const s = scenarios[currentIndex]; const dirText = s.direction === 1 ? 'увеличилось' : 'уменьшилось';
         els.btnAiCheck.disabled = true; els.aiLoading.classList.remove('hidden'); els.aiResultBox.classList.add('hidden');
+        
         const sysInstruction = `Ты строгий эксперт ЕГЭ. Проверь пункт 2 задания 21. Требуется: фактор + объяснение влияния. Рынок: ${s.market}. Изменение: ${s.targetType} ${dirText}. Критерии: 1. factor_correct: Назван фактор? 2. explanation_detailed: Дано объяснение? 3. market_mentioned: Ученик ЯВНО написал название рынка в ответе? Верни JSON.`;
         const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
+        
         try {
-            const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             
             let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
             rawText = rawText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
@@ -602,13 +673,20 @@
             updateCrit('ai-crit-1', data.factor_correct); updateCrit('ai-crit-2', data.explanation_detailed); updateCrit('ai-crit-3', data.market_mentioned);
             els.aiComment.textContent = data.expert_comment;
             const isPerfect = data.factor_correct && data.explanation_detailed && data.market_mentioned;
+            
             if (!isPerfect) errorCount++;
+            
             els.aiScoreBadge.textContent = isPerfect ? 'Макс. балл' : 'Ошибка (0)';
             els.aiScoreBadge.className = isPerfect ? 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500' : 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-red-500';
             els.aiLoading.classList.add('hidden'); els.aiResultBox.classList.remove('hidden'); els.aiResultBox.classList.add('fade-in');
+        
         } catch (error) { 
             console.error("AI Check Error:", error);
-            alert("Ошибка при проверке экспертом: " + error.message); 
+            if (error.message.includes("403")) {
+                alert("Ошибка ключа API (403). Скорее всего ключ недействителен или был заблокирован. Создайте новый ключ и укажите его в настройках (кнопка 'Ключ' вверху).");
+            } else {
+                alert("Ошибка при проверке: " + error.message); 
+            }
             els.aiLoading.classList.add('hidden'); 
         } 
         finally { els.btnAiCheck.disabled = false; }
