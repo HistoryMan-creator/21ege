@@ -43,14 +43,12 @@
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Custom buttons for Step 1 & 2 */
         .q3-btn { border: 2px solid #e5e7eb; transition: all 0.15s; cursor: pointer; user-select: none; }
         .q3-btn:hover { border-color: #9ca3af; background-color: #f9fafb; }
         .selected-active { border-color: #3b82f6 !important; background-color: #eff6ff !important; color: #1d4ed8 !important; }
         .selected-correct { border-color: #22c55e !important; background-color: #f0fdf4 !important; color: #15803d !important; }
         .selected-wrong { border-color: #ef4444 !important; background-color: #fef2f2 !important; color: #b91c1c !important; animation: shake 0.4s; }
 
-        /* Scrollbar (mostly hidden on PC by design) */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
@@ -61,35 +59,100 @@
 
     <!-- BREAK MODAL (ВИДЕО ОТДЫХ) -->
     <div id="break-modal" class="fixed inset-0 bg-black z-[100] hidden flex-col justify-center items-center">
-        <!-- Текстовый экран -->
-        <div id="break-text-screen" class="flex flex-col items-center justify-center fade-in">
+        <div id="break-text-screen" class="flex flex-col items-center justify-center fade-in text-center px-4">
             <h2 class="text-4xl md:text-6xl font-extrabold text-white mb-6 tracking-wide">Нужно отдохнуть</h2>
+            <p class="text-gray-400 mb-8 max-w-md">Ты отлично поработал. Сделай небольшую разминку!</p>
             <div class="loader" style="width: 50px; height: 50px; border-width: 5px; border-color: #374151; border-top-color: #a855f7;"></div>
         </div>
-        
-        <!-- Экран с видео -->
         <div id="break-video-screen" class="hidden flex-col items-center justify-center w-full h-full p-4 fade-in">
             <video id="break-video" src="Иммерсивное видео Включай и танцуй [get.gt].mp4" class="max-w-full max-h-[75vh] rounded-2xl shadow-2xl" controls playsinline></video>
             <button id="btn-close-break" class="mt-8 bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur text-white px-8 py-3 rounded-full font-bold text-sm md:text-base transition-colors flex items-center gap-2">
-                <i class="fas fa-times"></i> Закрыть и продолжить
+                <i class="fas fa-times"></i> Продолжить подготовку
             </button>
         </div>
     </div>
 
-    <!-- HEADER: Узкий и компактный -->
+    <!-- EASTER EGG MODAL (ИДЕАЛЬНАЯ СЕРИЯ) -->
+    <div id="easter-egg-modal" class="fixed inset-0 bg-black/80 z-[110] hidden flex-col justify-center items-center p-4 backdrop-blur-sm">
+        <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center max-w-md text-center fade-in">
+            <h2 class="text-2xl font-extrabold text-indigo-700 mb-2">Идеальная серия! 🎉</h2>
+            <p class="text-gray-600 mb-4 text-sm">4 задания подряд без единой ошибки. Так держать!</p>
+            <img src="загруженное (1).png" alt="Пасхалка" class="w-full max-h-[250px] rounded-xl mb-6 object-contain drop-shadow-md">
+            <button id="btn-close-easter-egg" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-transform transform active:scale-95 w-full">
+                Продолжить
+            </button>
+        </div>
+    </div>
+
+    <!-- GUIDE MODAL (ПАМЯТКА) -->
+    <div id="guide-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] hidden flex justify-center items-center p-4">
+        <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] fade-in">
+            <div class="bg-indigo-700 p-4 md:p-6 text-white flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-lightbulb text-yellow-300 text-xl md:text-2xl"></i>
+                    <h2 class="text-lg md:text-xl font-bold">Справочник неценовых факторов</h2>
+                </div>
+                <button id="btn-close-guide" class="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+                    <div class="space-y-4">
+                        <h3 class="text-blue-700 font-extrabold text-lg flex items-center gap-2 border-b-2 border-blue-100 pb-2 uppercase tracking-wider">
+                            <i class="fas fa-shopping-cart"></i> Спрос (D)
+                        </h3>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700">
+                            <li><strong class="text-gray-900">Доходы потребителей:</strong> Растут доходы — растет спрос (на нормальные товары).</li>
+                            <li><strong class="text-gray-900">Вкусы и мода:</strong> Популярность товара повышает интерес покупателей.</li>
+                            <li><strong class="text-gray-900">Количество покупателей:</strong> Рост численности населения или открытие рынка.</li>
+                            <li><strong class="text-gray-900">Цены на субституты:</strong> Подорожал кофе — вырос спрос на чай (заменитель).</li>
+                            <li><strong class="text-gray-900">Цены на комплементы:</strong> Подорожал бензин — упал спрос на машины (дополняющий).</li>
+                            <li><strong class="text-gray-900">Ожидания (цен):</strong> Если ждут роста цен завтра — покупают больше сегодня.</li>
+                            <li><strong class="text-gray-900">Сезонность:</strong> Спрос на лыжи зимой или на кремы для загара летом.</li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h3 class="text-red-700 font-extrabold text-lg flex items-center gap-2 border-b-2 border-red-100 pb-2 uppercase tracking-wider">
+                            <i class="fas fa-industry"></i> Предложение (S)
+                        </h3>
+                        <ul class="space-y-3 text-sm md:text-base text-gray-700">
+                            <li><strong class="text-gray-900">Цены на ресурсы:</strong> Дорогое сырье/энергия снижают предложение.</li>
+                            <li><strong class="text-gray-900">Технологии:</strong> Новое оборудование повышает эффективность и предложение.</li>
+                            <li><strong class="text-gray-900">Налоги:</strong> Рост налогов для бизнеса снижает предложение.</li>
+                            <li><strong class="text-gray-900">Субсидии:</strong> Помощь государства увеличивает предложение.</li>
+                            <li><strong class="text-gray-900">Число производителей:</strong> Больше фирм на рынке — выше предложение.</li>
+                            <li><strong class="text-gray-900">Природные условия:</strong> Актуально для сельхозпродукции (урожай/засуха).</li>
+                            <li><strong class="text-gray-900">Ожидания (прибыли):</strong> Рост цен на другие товары может увести капитал.</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="mt-8 bg-amber-50 border border-amber-200 p-4 rounded-xl flex items-start gap-3">
+                    <i class="fas fa-exclamation-triangle text-amber-500 mt-1"></i>
+                    <p class="text-xs md:text-sm text-amber-900 leading-relaxed italic">
+                        <strong>Важно:</strong> При объяснении в задании 21.2 обязательно указывай название рынка из условия задачи. Без рынка ответ не засчитают.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <header class="bg-gradient-to-r from-blue-800 via-indigo-800 to-purple-900 text-white shadow-md flex-shrink-0 z-20">
-        <div class="px-3 py-2 md:px-5 md:py-2.5 flex justify-between items-center">
+        <div class="px-3 py-1.5 md:px-5 md:py-2.5 flex justify-between items-center">
             <div class="flex items-center gap-2">
                 <i class="fas fa-graduation-cap text-lg md:text-xl text-purple-300"></i>
-                <h1 class="text-sm md:text-lg font-bold tracking-tight">ЕГЭ: Задание 21 <span class="hidden md:inline-block bg-purple-500 text-white text-[10px] px-2 py-0.5 rounded-full ml-2 align-top">EXPERT</span></h1>
+                <h1 class="text-sm md:text-lg font-bold tracking-tight">Задание 21</h1>
             </div>
-            <div class="flex items-center gap-3 md:gap-5">
+            <div class="flex items-center gap-2 md:gap-6">
+                <button id="btn-open-guide" class="bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg px-2.5 py-1 text-[10px] md:text-xs font-bold transition-all flex items-center gap-1.5 active:scale-95">
+                    <i class="fas fa-book-open"></i> <span class="hidden sm:inline">Памятка факторов</span><span class="sm:hidden">Теория</span>
+                </button>
                 <div class="hidden sm:flex flex-col text-right leading-none">
                     <span class="text-[9px] text-blue-200 uppercase font-semibold">Счет</span>
-                    <span class="font-bold text-xs md:text-sm"><span id="score-counter" class="text-green-300">0</span> верных</span>
+                    <span class="font-bold text-xs md:text-sm"><span id="score-counter" class="text-green-300">0</span></span>
                 </div>
                 <div class="bg-white/10 px-2 py-1 md:px-3 md:py-1 rounded border border-white/20 flex items-center gap-1.5">
-                    <span class="text-[10px] text-blue-100">Сценарий</span>
+                    <span class="text-[10px] text-blue-100">Вариант</span>
                     <span id="scenario-counter" class="font-bold text-xs md:text-sm">1/30</span>
                 </div>
             </div>
@@ -98,39 +161,33 @@
 
     <main class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden relative">
         
-        <!-- ПАНЕЛЬ ГРАФИКА (Большая на ПК: 60% ширины) -->
-        <section class="h-[45dvh] lg:h-full lg:w-[55%] xl:w-[60%] flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 shadow-md z-10 flex-shrink-0 relative">
+        <section class="h-[42dvh] lg:h-full lg:w-[55%] xl:w-[60%] flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 shadow-md z-10 flex-shrink-0 relative">
             
-            <div class="flex justify-between items-center px-3 py-1.5 md:px-4 md:py-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
-                <h2 class="text-xs md:text-sm font-bold text-gray-700 flex items-center gap-1.5"><i class="fas fa-chart-area text-indigo-500"></i> Модель рынка</h2>
-                <button id="btn-reset-graph" class="text-[10px] md:text-xs bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 py-1 px-2 md:px-3 rounded font-medium flex items-center gap-1 shadow-sm transition-colors">
-                    <i class="fas fa-sync-alt"></i> Сброс графика
+            <div class="flex justify-between items-center px-3 py-1 md:px-4 md:py-2 border-b border-gray-100 bg-gray-50 flex-shrink-0">
+                <h2 class="text-[10px] md:text-sm font-bold text-gray-700 flex items-center gap-1.5"><i class="fas fa-chart-area text-indigo-500"></i> Модель</h2>
+                <button id="btn-reset-graph" class="text-[9px] md:text-xs bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 py-0.5 px-2 md:px-3 rounded font-medium flex items-center gap-1 shadow-sm transition-colors">
+                    <i class="fas fa-sync-alt"></i> Сброс
                 </button>
             </div>
 
-            <div class="flex justify-center gap-4 md:gap-6 py-1 md:py-1.5 bg-white border-b border-gray-100 text-[10px] md:text-xs font-bold text-gray-600 flex-shrink-0">
-                <div class="flex items-center gap-1.5"><div class="w-3 md:w-4 h-1 md:h-1.5 bg-blue-500 rounded-sm"></div> D - Спрос</div>
-                <div class="flex items-center gap-1.5"><div class="w-3 md:w-4 h-1 md:h-1.5 bg-red-500 rounded-sm"></div> S - Предложение</div>
+            <div class="flex justify-center gap-4 md:gap-6 py-1 bg-white border-b border-gray-100 text-[10px] md:text-xs font-bold text-gray-600 flex-shrink-0">
+                <div class="flex items-center gap-1.5"><div class="w-3 md:w-4 h-1 md:h-1.5 bg-blue-500 rounded-sm shadow-sm"></div> D - Спрос</div>
+                <div class="flex items-center gap-1.5"><div class="w-3 md:w-4 h-1 md:h-1.5 bg-red-500 rounded-sm shadow-sm"></div> S - Предложение</div>
             </div>
 
-            <!-- CANVAS: Высокое разрешение 800x550, адаптивное сжатие CSS -->
             <div class="flex-1 min-h-0 relative flex justify-center items-center p-1 md:p-3 bg-white">
                 <canvas id="graphCanvas" width="800" height="550" class="w-full h-full object-contain"></canvas>
             </div>
 
-            <!-- УСЛОВИЕ -->
-            <div class="px-3 py-2 md:px-4 md:py-3 bg-yellow-50 border-t-2 border-yellow-300 text-[12px] md:text-[14px] flex-shrink-0 overflow-y-auto max-h-[35%] text-gray-800 leading-snug">
+            <div class="px-3 py-2 md:px-4 md:py-3 bg-yellow-50 border-t-2 border-yellow-300 text-[11px] md:text-[14px] flex-shrink-0 overflow-y-auto max-h-[35%] text-gray-800 leading-snug">
                 На графике изменена ситуация на <strong id="task-market" class="bg-yellow-200 px-1 rounded text-black">рынке</strong>. 
-                Кривая <strong id="task-curve-desc" class="text-indigo-700 font-bold"></strong> при неизменной <strong id="task-curve-other" class="text-indigo-700 font-bold"></strong>. 
-                <span class="italic text-gray-600 hidden sm:inline">На графике P – цена, Q – количество.</span>
+                Кривая <strong id="task-curve-desc" class="text-indigo-700 font-bold"></strong> при неизменной <strong id="task-curve-other" class="text-indigo-700 font-bold"></strong>.
             </div>
         </section>
 
-        <!-- ПАНЕЛЬ ЗАДАНИЙ (Суперкомпактная для ПК: 40% ширины) -->
         <section class="flex-1 lg:h-full lg:w-[45%] xl:w-[40%] overflow-y-auto bg-gray-50 p-2 md:p-4 relative scroll-smooth flex flex-col">
             <div class="w-full max-w-2xl mx-auto flex flex-col gap-2 md:gap-3 flex-1">
                 
-                <!-- 21.1 -->
                 <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 fade-in" style="animation-delay: 0.1s;">
                     <h3 class="font-bold text-[13px] md:text-sm mb-2 flex items-center gap-1.5">
                         <span class="bg-gray-800 text-white w-4 h-4 md:w-5 md:h-5 rounded flex items-center justify-center text-[9px] md:text-[10px]">1</span> 
@@ -155,20 +212,19 @@
                     <div id="q1-feedback" class="mt-2 p-1.5 rounded text-[11px] md:text-[12px] hidden font-medium flex items-center gap-1"></div>
                 </div>
 
-                <!-- 21.2 ЭКСПЕРТНАЯ ПРОВЕРКА -->
                 <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-purple-200 fade-in relative" style="animation-delay: 0.2s;">
-                    <div class="absolute top-0 right-0 bg-purple-100 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wide">Эксперт</div>
+                    <div class="absolute top-0 right-0 bg-purple-100 text-purple-800 text-[9px] font-bold px-2 py-0.5 rounded-bl-lg uppercase tracking-wide">Критерии</div>
                     <h3 class="font-bold text-[13px] md:text-sm mb-1 flex items-center gap-1.5">
                         <span class="bg-gray-800 text-white w-4 h-4 md:w-5 md:h-5 rounded flex items-center justify-center text-[9px] md:text-[10px]">2</span> 
-                        Что вызвало изменение?
+                        Что могло вызвать изменение?
                     </h3>
-                    <p class="text-[10px] md:text-[11px] text-gray-500 mb-2 leading-tight">Укажите фактор и объясните влияние (с указанием рынка).</p>
+                    <p class="text-[10px] md:text-[11px] text-gray-500 mb-2 leading-tight">Укажите неценовой фактор и объясните его влияние.</p>
                     
-                    <textarea id="q2-input" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-0 focus:border-purple-500 transition-colors text-[11px] md:text-[13px] resize-none mb-2 shadow-inner" placeholder="Сформулируй ответ..."></textarea>
+                    <textarea id="q2-input" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-0 focus:border-purple-500 transition-colors text-[11px] md:text-[13px] resize-none mb-2 shadow-inner" placeholder="Фактор + объяснение + рынок..."></textarea>
                     
                     <div class="flex gap-2">
-                        <button id="btn-ai-check" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white px-3 py-1.5 md:py-2 rounded-lg font-medium shadow-sm flex justify-center items-center gap-1.5 text-[11px] md:text-[12px] transition-transform active:scale-95">
-                            <i class="fas fa-check-double"></i> Проверить
+                        <button id="btn-ai-check" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white px-3 py-1.5 md:py-2 rounded-lg font-medium shadow-sm flex justify-center items-center gap-1.5 text-[11px] md:text-[12px] transition-all active:scale-95">
+                            <i class="fas fa-check-double"></i> Отправить на проверку
                         </button>
                         <button id="btn-check-q2-ideal" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 md:py-2 rounded-lg font-medium text-[11px] md:text-[12px] transition-colors">
                             Эталон
@@ -176,12 +232,12 @@
                     </div>
 
                     <div id="ai-loading" class="hidden mt-2 p-2 bg-purple-50 rounded-lg border border-purple-100 flex items-center gap-2">
-                        <div class="loader"></div><span class="text-[10px] text-purple-800 font-medium">Проверка ФИПИ...</span>
+                        <div class="loader"></div><span class="text-[10px] text-purple-800 font-medium">Сверка с критериями...</span>
                     </div>
 
                     <div id="ai-result-box" class="mt-2 hidden rounded-lg border">
                         <div class="bg-gray-50 p-1.5 border-b flex justify-between items-center">
-                            <h4 class="font-bold text-gray-800 text-[10px] flex items-center gap-1"><i class="fas fa-clipboard-check text-purple-600"></i> Вердикт</h4>
+                            <h4 class="font-bold text-gray-800 text-[10px] flex items-center gap-1"><i class="fas fa-clipboard-check text-purple-600"></i> Результат</h4>
                             <span id="ai-score-badge" class="px-1.5 py-0.5 rounded text-[9px] font-bold text-white"></span>
                         </div>
                         <div class="p-2 bg-white">
@@ -204,7 +260,7 @@
 
                     <div id="q2-ideal-box" class="mt-2 hidden rounded-lg border border-green-200">
                         <div class="bg-green-100 p-1.5 border-b border-green-200">
-                            <h4 class="font-bold text-green-800 text-[10px]"><i class="fas fa-star text-yellow-500 mr-1"></i> Эталонный ответ</h4>
+                            <h4 class="font-bold text-green-800 text-[10px]"><i class="fas fa-star text-yellow-500 mr-1"></i> Ответ эксперта</h4>
                         </div>
                         <div class="bg-green-50/50 p-2 text-[11px] md:text-[12px] text-gray-800 leading-tight">
                             <strong class="text-indigo-700">Фактор:</strong> <span id="q2-ans-factor"></span><br>
@@ -213,22 +269,19 @@
                     </div>
                 </div>
 
-                <!-- 21.3 НАГЛЯДНЫЙ ВЫБОР (Grid для ПК) -->
                 <div class="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-200 fade-in" style="animation-delay: 0.3s;">
                     <h3 class="font-bold text-[13px] md:text-sm mb-2 flex items-center gap-1.5">
                         <span class="bg-gray-800 text-white w-4 h-4 md:w-5 md:h-5 rounded flex items-center justify-center text-[9px] md:text-[10px]">3</span> 
                         Решение новой ситуации
                     </h3>
                     
-                    <div class="bg-blue-50 border border-blue-100 p-2 md:p-3 rounded-lg mb-2 md:mb-3">
+                    <div class="bg-blue-50 border border-blue-100 p-2 md:p-3 rounded-lg mb-2 md:mb-3 shadow-inner">
                         <p class="text-[11px] md:text-[13px] font-medium text-blue-900 leading-tight" id="q3-scenario-text"></p>
                     </div>
 
-                    <!-- Side-by-side on desktop, stacked on mobile -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-3 lg:gap-4">
-                        <!-- ШАГ 1 -->
                         <div>
-                            <p class="text-[10px] md:text-[11px] font-bold text-gray-700 mb-1.5">ШАГ 1: Влияние на график?</p>
+                            <p class="text-[10px] md:text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-tighter">ШАГ 1: Влияние на график?</p>
                             <div class="grid grid-cols-2 gap-1.5">
                                 <button class="q3-btn bg-white rounded p-1.5 text-[9px] md:text-[10px] font-bold text-gray-700 flex justify-between items-center" data-ans="D_up">
                                     Спрос вырос <i class="fas fa-arrow-right text-blue-500"></i>
@@ -245,9 +298,8 @@
                             </div>
                         </div>
 
-                        <!-- ШАГ 2 + КНОПКА -->
                         <div class="flex flex-col">
-                            <p class="text-[10px] md:text-[11px] font-bold text-gray-700 mb-1.5">ШАГ 2: Цена (P)?</p>
+                            <p class="text-[10px] md:text-[11px] font-bold text-gray-700 mb-1.5 uppercase tracking-tighter">ШАГ 2: Цена (P)?</p>
                             <div class="grid grid-cols-2 gap-1.5 mb-2">
                                 <button class="q3-btn bg-white rounded p-1.5 text-[10px] md:text-[11px] font-bold text-gray-700 flex justify-center items-center gap-1" data-ans="up">
                                     <i class="fas fa-arrow-up text-gray-400"></i> Выросла
@@ -256,18 +308,17 @@
                                     <i class="fas fa-arrow-down text-gray-400"></i> Упала
                                 </button>
                             </div>
-                            <button id="btn-check-q3" class="mt-auto w-full bg-gray-800 hover:bg-gray-900 text-white px-2 py-1.5 md:py-2 rounded font-bold flex justify-center items-center gap-1.5 text-[11px] md:text-xs transition-colors">
-                                <i class="fas fa-tasks"></i> Ответить (21.3)
+                            <button id="btn-check-q3" class="mt-auto w-full bg-gray-800 hover:bg-gray-900 text-white px-2 py-1.5 md:py-2 rounded font-bold flex justify-center items-center gap-1.5 text-[11px] md:text-xs transition-colors shadow-lg shadow-gray-200">
+                                <i class="fas fa-tasks"></i> Проверить пункт 3
                             </button>
                         </div>
                     </div>
                     <div id="q3-feedback" class="mt-2 p-2 rounded text-[10px] md:text-[12px] hidden font-medium"></div>
                 </div>
 
-                <!-- Кнопка Далее (прижата вниз) -->
                 <div class="mt-auto pt-2 pb-4 flex justify-end">
-                    <button id="btn-next-scenario" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white px-5 py-2 md:py-2.5 rounded-lg font-bold shadow-md flex items-center gap-1.5 text-xs md:text-sm transition-transform active:scale-95">
-                        Следующий <i class="fas fa-arrow-right"></i>
+                    <button id="btn-next-scenario" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 text-white px-5 py-2 md:py-2.5 rounded-lg font-bold shadow-md flex items-center gap-1.5 text-xs md:text-sm transition-all hover:-translate-y-0.5 active:scale-95">
+                        Следующий вариант <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
 
@@ -278,11 +329,10 @@
 <script>
     const apiKey = "";
 
-    // 30 СЦЕНАРИЕВ (ФИПИ)
     const scenarios = [
         { market: "рынок легковых автомобилей", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Рост доходов потребителей", q2_explanation: "В связи с экономическим подъемом реальные доходы населения выросли. Люди стали чаще покупать новые машины, что привело к росту спроса на рынке легковых автомобилей.", q3_text: "Как изменятся предложение и равновесная цена на данном рынке, если государство увеличит налоги на производителей автомобилей при прочих равных условиях?", q3_ans: "S_down" },
         { market: "рынок отечественных свежих овощей", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Благоприятные погодные условия", q2_explanation: "Благодаря идеальным погодным условиям фермеры собрали рекордный урожай, что привело к увеличению предложения на рынке отечественных свежих овощей.", q3_text: "Как изменятся спрос и равновесная цена, если в СМИ появится серия передач о пользе ежедневного употребления свежих овощей?", q3_ans: "D_up" },
-        { market: "рынок путевок на зарубежные курорты", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Снижение доходов населения", q2_explanation: "Из-за экономического кризиса реальные доходы населения упали, люди стали экономить на отдыхе, что привело к снижению спроса на рынке туристических путевок.", q3_text: "Как изменятся предложение и равновесная цена, если сразу несколько крупных туроператоров обанкротятся и уйдут с рынка?", q3_ans: "S_down" },
+        { market: "рынок путевок на зарубежные курорты", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Снижение доходов населения", q2_explanation: "Из-за экономического кризиса реальные доходы населения упали, люди стали экономить на отдыхе, что привело к снижению спроса на рынке туристических путевок на зарубежные курорты.", q3_text: "Как изменятся предложение и равновесная цена, если сразу несколько крупных туроператоров обанкротятся и уйдут с рынка?", q3_ans: "S_down" },
         { market: "рынок рыбной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Ухудшение экологической обстановки", q2_explanation: "Из-за загрязнения водоемов улов рыбы рыболовецкими компаниями значительно сократился, что привело к уменьшению предложения на рынке рыбной продукции.", q3_text: "Как изменятся спрос и равновесная цена, если значительно вырастут цены на мясо (товар-субститут)?", q3_ans: "D_up" },
         { market: "рынок услуг салонов красоты", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Увеличение числа производителей", q2_explanation: "В связи с популярностью бьюти-бизнеса открылось множество новых студий, что привело к росту предложения на рынке услуг салонов красоты.", q3_text: "Как изменятся спрос и равновесная цена, если мода на сложные косметические процедуры пройдет и люди предпочтут естественность?", q3_ans: "D_down" },
         { market: "рынок планшетных компьютеров", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Переход школ на дистанционное обучение", q2_explanation: "Из-за дистанционного обучения родителям потребовалось массово закупать технику для детей, что вызвало рост спроса на рынке планшетных компьютеров.", q3_text: "Как изменятся предложение и равновесная цена, если повысятся таможенные пошлины на ввоз импортных микрочипов?", q3_ans: "S_down" },
@@ -291,7 +341,7 @@
         { market: "рынок платных онлайн-курсов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Необходимость переобучения", q2_explanation: "Из-за автоматизации многих профессий людям потребовалось осваивать новые специальности, что привело к росту спроса на рынке платных онлайн-курсов.", q3_text: "Как изменятся предложение и равновесная цена, если государство предоставит онлайн-школам крупные налоговые льготы?", q3_ans: "S_up" },
         { market: "рынок велосипедов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Сезонность / Эко-тренды", q2_explanation: "С наступлением тепла и модой на здоровый образ жизни люди стали пересаживаться на велосипеды, что увеличило спрос на рынке велосипедов.", q3_text: "Как изменятся предложение и равновесная цена, если логистика доставки рам из-за рубежа сильно подорожает?", q3_ans: "S_down" },
         { market: "рынок смартфонов", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Дефицит комплектующих", q2_explanation: "Кризис полупроводников привел к нехватке микрочипов, заводы снизили объемы производства, предложение на рынке смартфонов упало.", q3_text: "Как изменятся спрос и равновесная цена, если производители анонсируют выход принципиально новой модели в следующем месяце?", q3_ans: "D_down" },
-        { market: "рынок зимней верхней одежды", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Погодные условия", q2_explanation: "Спрогнозирована аномально теплая зима без морозов. Люди решили не обновлять гардероб, что вызвало падение спроса на рынке зимней одежды.", q3_text: "Как изменятся предложение и равновесная цена, если изобретут новый дешевый синтетический утеплитель?", q3_ans: "S_up" },
+        { market: "рынок зимней верхней одежды", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Погодные условия", q2_explanation: "Спрогнозирована аномально теплую зиму без морозов. Люди решили не обновлять гардероб, что вызвало падение спроса на рынке зимней верхней одежды.", q3_text: "Как изменятся предложение и равновесная цена, если изобретут новый дешевый синтетический утеплитель?", q3_ans: "S_up" },
         { market: "рынок молочной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Удорожание кормов", q2_explanation: "Из-за засухи цены на сено и корма выросли. Издержки фермерских хозяйств увеличились, предложение на рынке молочной продукции сократилось.", q3_text: "Как изменятся спрос и равновесная цена, если правительство выдаст семьям сертификаты на бесплат получение молока?", q3_ans: "D_up" },
         { market: "рынок авиаперевозок", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Рост цен на ресурсы (топливо)", q2_explanation: "На мировом рынке подорожала нефть. Затраты авиакомпаний выросли, они сократили рейсы, предложение на рынке авиаперевозок снизилось.", q3_text: "Как изменятся спрос и равновесная цена, если наступит сезон летних отпусков?", q3_ans: "D_up" },
         { market: "рынок фитнес-услуг", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Падение доходов населения", q2_explanation: "В условиях экономического спада реальные доходы снизились. Многие отказались от абонементов, спрос на рынке фитнес-услуг упал.", q3_text: "Как изменятся предложение и равновесная цена, если арендная плата за залы в торговых центрах значительно снизится?", q3_ans: "S_up" },
@@ -300,7 +350,7 @@
         { market: "рынок деревянной мебели", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Снижение цен на сырье", q2_explanation: "На рынке образовался переизбыток дешевых пиломатериалов. Издержки фабрик упали, предложение на рынке деревянной мебели выросло.", q3_text: "Как изменятся спрос и равновесная цена, если в стране резко упадут темпы ввода нового жилья?", q3_ans: "D_down" },
         { market: "рынок спортивного питания", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Популяризация ЗОЖ", q2_explanation: "В обществе растет интерес к фитнесу, люди чаще посещают тренажерные залы, что ведет к росту спроса на рынке спортивного питания.", q3_text: "Как изменятся предложение и равновесная цена, если государство выделит гранты производителям спортпита?", q3_ans: "S_up" },
         { market: "рынок отечественных автомобилей", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Рост цен на ресурсы (металл)", q2_explanation: "Подорожал листовой прокат. Затраты автозаводов выросли, что привело к снижению предложения на рынке отечественных автомобилей.", q3_text: "Как изменятся спрос и равновесная цена, если государство запустит программу льготного автокредитования?", q3_ans: "D_up" },
-        { market: "рынок детских игрушек", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Демографический спад", q2_explanation: "Снижение рождаемости привело к уменьшению целевой аудитории потребителей, что вызвало падение спроса на рынке детских игрушек.", q3_text: "Как изменятся предложение и равновесная цена, если повысят ввозные пошлины на зарубежные пластмассовые игрушки?", q3_ans: "S_down" },
+        { market: "рынок детских игрушек", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Демографический спад", q2_explanation: "Снижение рождаемости привело к уменьшению целевой аудитории потребителей, что вызвало падение спроса на рынке детских игрушек.", q3_text: "Как изменятся предложение и равновесная цена, если повысят ввозные пошлины на зарубежные игрушки?", q3_ans: "S_down" },
         { market: "рынок шоколадных изделий", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Природные катаклизмы", q2_explanation: "Засуха вызвала неурожай какао-бобов. Возник дефицит сырья, предложение на рынке шоколадных изделий упало.", q3_text: "Как изменятся спрос и равновесная цена, если врачи опубликуют исследование о вреде сладкого для сердца?", q3_ans: "D_down" },
         { market: "рынок услуг репетиторов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Усложнение экзаменов", q2_explanation: "Министерство образования усложнило формат ЕГЭ. Родители стали чаще нанимать частных педагогов, спрос на рынке услуг репетиторов вырос.", q3_text: "Как изменятся предложение и равновесная цена, если студентам вузов официально разрешат подрабатывать без налогов?", q3_ans: "S_up" },
         { market: "рынок строительных материалов", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Внедрение новых технологий", q2_explanation: "Заводы внедрили новые энергосберегающие печи, что снизило издержки и позволило увеличить предложение на рынке строительных материалов.", q3_text: "Как изменятся спрос и равновесная цена, если банки резко повысят ставки по кредитам для девелоперов?", q3_ans: "D_down" },
@@ -322,51 +372,36 @@
 
     let currentIndex = 0;
     let score = 0;
-    let completedScenariosCount = 0; // Счетчик пройденных заданий для вызова видео
+    let completedScenariosCount = 0;
+    let errorCount = 0;
+    let easterEggShown = false;
     let task_d_shift = 0;
     let task_s_shift = 0;
     let q3Mode = false;
     let userQ3Shift = null; 
     let userQ3Price = null;
 
-    // --- CANVAS CONFIG ---
     const canvas = document.getElementById('graphCanvas');
     const ctx = canvas.getContext('2d');
-
     const config = { originX: 70, originY: 480, scaleQ: 6.0, scaleP: 4.0, lineWidth: 6 }; 
 
-    function getCoords(q, p) {
-        return { x: config.originX + q * config.scaleQ, y: config.originY - p * config.scaleP };
-    }
-
-    function getEquilibrium(d_shift, s_shift) {
-        let q = 50 + (d_shift + s_shift) / 2;
-        let p = q - s_shift;
-        return {q, p};
-    }
+    function getCoords(q, p) { return { x: config.originX + q * config.scaleQ, y: config.originY - p * config.scaleP }; }
+    function getEquilibrium(d_shift, s_shift) { let q = 50 + (d_shift + s_shift) / 2; let p = q - s_shift; return {q, p}; }
 
     const drawBoundedCurve = (isD, shift, color, label, isDashed = false) => {
         const getP = q => isD ? 100 - q + shift : q - shift;
         const getQ = p => isD ? 100 - p + shift : p + shift;
-
         let pts = [];
-        const checkAndAdd = (q, p) => {
-            if (q >= 2 && q <= 115 && p >= 2 && p <= 115) pts.push({q, p});
-        };
-
+        const checkAndAdd = (q, p) => { if (q >= 2 && q <= 115 && p >= 2 && p <= 115) pts.push({q, p}); };
         checkAndAdd(2, getP(2)); checkAndAdd(115, getP(115));
         checkAndAdd(getQ(2), 2); checkAndAdd(getQ(115), 115);
-
         if (pts.length < 2) return; 
-
         pts.sort((a, b) => a.q - b.q); 
         let start = getCoords(pts[0].q, pts[0].p);
         let end = getCoords(pts[pts.length - 1].q, pts[pts.length - 1].p);
-
         ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = config.lineWidth;
         if (isDashed) ctx.setLineDash([10, 10]); else ctx.setLineDash([]);
         ctx.moveTo(start.x, start.y); ctx.lineTo(end.x, end.y); ctx.stroke(); ctx.setLineDash([]);
-
         let labelPt = end;
         ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.fillRect(labelPt.x - 4, labelPt.y - 15, 38, 28);
         ctx.fillStyle = color; ctx.font = 'bold 22px Inter'; ctx.fillText(label, labelPt.x + 2, labelPt.y + 6);
@@ -374,68 +409,35 @@
 
     const drawThickEgeArrow = (isD, shiftVal) => {
         if (shiftVal === 0) return;
-        
         let pLevel = isD ? 75 : 25; 
         let qOld = isD ? (100 - pLevel) : pLevel;
         let qNew = qOld + shiftVal;
-        
-        let ptOld = getCoords(qOld, pLevel);
-        let ptNew = getCoords(qNew, pLevel);
-        
-        let midX = (ptOld.x + ptNew.x) / 2;
-        let y = ptOld.y;
-        
-        let distance = Math.abs(ptNew.x - ptOld.x);
-        if (distance < 12) return; 
-        
-        let arrowLen = Math.min(distance * 0.5, 35); 
-        let dir = Math.sign(ptNew.x - ptOld.x);
-        
-        let startX = midX - (dir * arrowLen / 2);
-        let endX = midX + (dir * arrowLen / 2);
-        
+        let ptOld = getCoords(qOld, pLevel); let ptNew = getCoords(qNew, pLevel);
+        let midX = (ptOld.x + ptNew.x) / 2; let y = ptOld.y;
+        let distance = Math.abs(ptNew.x - ptOld.x); if (distance < 12) return; 
+        let arrowLen = Math.min(distance * 0.5, 35); let dir = Math.sign(ptNew.x - ptOld.x);
+        let startX = midX - (dir * arrowLen / 2); let endX = midX + (dir * arrowLen / 2);
         const headlen = 12; 
-        
-        // Стержень стрелки
         ctx.beginPath(); ctx.strokeStyle = '#000000'; ctx.lineWidth = 5;
-        ctx.moveTo(startX, y); 
-        ctx.lineTo(endX - dir * (headlen - 1), y);
-        ctx.stroke();
-
-        // Острие стрелки - залитый полигон (треугольник) для красивого кончика
-        ctx.beginPath();
-        ctx.fillStyle = '#000000';
-        ctx.moveTo(endX, y);
-        ctx.lineTo(endX - dir * headlen, y - 7);
-        ctx.lineTo(endX - dir * headlen, y + 7);
-        ctx.closePath();
-        ctx.fill();
+        ctx.moveTo(startX, y); ctx.lineTo(endX - dir * (headlen - 1), y); ctx.stroke();
+        ctx.beginPath(); ctx.fillStyle = '#000000'; ctx.moveTo(endX, y); ctx.lineTo(endX - dir * headlen, y - 7); ctx.lineTo(endX - dir * headlen, y + 7); ctx.closePath(); ctx.fill();
     };
 
     function drawGraph() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
         ctx.beginPath(); ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 2;
-        for(let i=1; i<12; i++) {
-            let y = config.originY - i*40; let x = config.originX + i*60;
-            ctx.moveTo(config.originX, y); ctx.lineTo(canvas.width-10, y);
-            ctx.moveTo(x, config.originY); ctx.lineTo(x, 10);
-        }
+        for(let i=1; i<12; i++) { let y = config.originY - i*40; let x = config.originX + i*60; ctx.moveTo(config.originX, y); ctx.lineTo(canvas.width-10, y); ctx.moveTo(x, config.originY); ctx.lineTo(x, 10); }
         ctx.stroke();
-
         ctx.beginPath(); ctx.strokeStyle = '#111827'; ctx.lineWidth = 4;
         ctx.moveTo(config.originX, config.originY); ctx.lineTo(config.originX, 10);
         ctx.lineTo(config.originX - 8, 22); ctx.moveTo(config.originX, 10); ctx.lineTo(config.originX + 8, 22);
         ctx.moveTo(config.originX, config.originY); ctx.lineTo(canvas.width - 15, config.originY);
         ctx.lineTo(canvas.width - 27, config.originY - 8); ctx.moveTo(canvas.width - 15, config.originY); ctx.lineTo(canvas.width - 27, config.originY + 8);
         ctx.stroke();
-
         ctx.fillStyle = '#111827'; ctx.font = 'bold 24px Inter';
         ctx.fillText('P', config.originX - 35, 25); ctx.fillText('Q', canvas.width - 30, config.originY + 30);
         ctx.font = '20px Inter'; ctx.fillText('0', config.originX - 22, config.originY + 22);
-
         const s = scenarios[currentIndex];
-        
         if (s.shiftType === 'D') {
             drawBoundedCurve(true, 0, '#60a5fa', 'D'); drawBoundedCurve(true, task_d_shift, '#1e3a8a', 'D1'); drawBoundedCurve(false, 0, '#f87171', 'S'); 
             drawThickEgeArrow(true, task_d_shift);
@@ -443,33 +445,23 @@
             drawBoundedCurve(false, 0, '#f87171', 'S'); drawBoundedCurve(false, task_s_shift, '#991b1b', 'S1'); drawBoundedCurve(true, 0, '#60a5fa', 'D');
             drawThickEgeArrow(false, task_s_shift);
         }
-
-        let eq1 = getEquilibrium(task_d_shift, task_s_shift);
-        let eq1Coords = getCoords(eq1.q, eq1.p);
-        
+        let eq1 = getEquilibrium(task_d_shift, task_s_shift); let eq1Coords = getCoords(eq1.q, eq1.p);
         ctx.beginPath(); ctx.setLineDash([6, 6]); ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 2;
         ctx.moveTo(config.originX, eq1Coords.y); ctx.lineTo(eq1Coords.x, eq1Coords.y);
         ctx.moveTo(eq1Coords.x, config.originY); ctx.lineTo(eq1Coords.x, eq1Coords.y); ctx.stroke(); ctx.setLineDash([]);
-
         ctx.beginPath(); ctx.arc(eq1Coords.x, eq1Coords.y, 7, 0, Math.PI * 2);
         ctx.fillStyle = '#111827'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
         ctx.font = 'bold 20px Inter'; ctx.fillText('E', eq1Coords.x + 12, eq1Coords.y - 12);
-
         if (q3Mode && userQ3Shift) {
             let extraD = userQ3Shift.startsWith('D') ? (userQ3Shift.endsWith('up') ? 25 : -25) : 0;
             let extraS = userQ3Shift.startsWith('S') ? (userQ3Shift.endsWith('up') ? 25 : -25) : 0;
             let finalDShift = task_d_shift + extraD; let finalSShift = task_s_shift + extraS;
             let isQ3D = userQ3Shift.startsWith('D');
-            
             drawBoundedCurve(isQ3D, isQ3D ? finalDShift : finalSShift, isQ3D ? '#3b82f6' : '#ef4444', isQ3D ? 'D2' : 'S2', true);
-            
-            let eq2 = getEquilibrium(finalDShift, finalSShift);
-            let eq2Coords = getCoords(eq2.q, eq2.p);
-            
+            let eq2 = getEquilibrium(finalDShift, finalSShift); let eq2Coords = getCoords(eq2.q, eq2.p);
             ctx.beginPath(); ctx.setLineDash([6, 6]); ctx.strokeStyle = '#059669'; ctx.lineWidth = 2;
             ctx.moveTo(config.originX, eq2Coords.y); ctx.lineTo(eq2Coords.x, eq2Coords.y);
             ctx.moveTo(eq2Coords.x, config.originY); ctx.lineTo(eq2Coords.x, eq2Coords.y); ctx.stroke(); ctx.setLineDash([]);
-            
             ctx.beginPath(); ctx.arc(eq2Coords.x, eq2Coords.y, 8, 0, Math.PI * 2);
             ctx.fillStyle = '#059669'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = '#059669'; ctx.font = 'bold 20px Inter'; ctx.fillText('E2', eq2Coords.x + 12, eq2Coords.y - 12);
@@ -487,18 +479,15 @@
         q3ShiftBtns: document.querySelectorAll('.q3-btn[data-ans*="_"]'), q3PriceBtns: document.querySelectorAll('.q3-btn[data-ans="up"], .q3-btn[data-ans="down"]'),
         btnCheckQ3: document.getElementById('btn-check-q3'), q3Fb: document.getElementById('q3-feedback'),
         btnNext: document.getElementById('btn-next-scenario'), btnReset: document.getElementById('btn-reset-graph'),
-        // Модальное окно для видео
-        breakModal: document.getElementById('break-modal'), breakTextScreen: document.getElementById('break-text-screen'),
-        breakVideoScreen: document.getElementById('break-video-screen'), breakVideo: document.getElementById('break-video'),
-        btnCloseBreak: document.getElementById('btn-close-break')
+        breakModal: document.getElementById('break-modal'), breakTextScreen: document.getElementById('break-text-screen'), breakVideoScreen: document.getElementById('break-video-screen'), breakVideo: document.getElementById('break-video'), btnCloseBreak: document.getElementById('btn-close-break'),
+        easterEggModal: document.getElementById('easter-egg-modal'), btnCloseEasterEgg: document.getElementById('btn-close-easter-egg'),
+        guideModal: document.getElementById('guide-modal'), btnOpenGuide: document.getElementById('btn-open-guide'), btnCloseGuide: document.getElementById('btn-close-guide')
     };
 
     function loadScenario(idx) {
-        const s = scenarios[idx];
-        els.counter.textContent = `${idx + 1}/30`;
-        els.market.textContent = s.market; 
-        if (s.shiftType === 'D') { els.curveDesc.textContent = "D переместилась в положение D1"; els.curveOther.textContent = "кривой S"; } 
-        else { els.curveDesc.textContent = "S переместилась в положение S1"; els.curveOther.textContent = "кривой D"; }
+        const s = scenarios[idx]; els.counter.textContent = `${idx + 1}/30`; els.market.textContent = s.market; 
+        if (s.shiftType === 'D') { els.curveDesc.textContent = "D переместилась в положение D1"; els.curveOther.textContent = "S"; } 
+        else { els.curveDesc.textContent = "S переместилась в положение S1"; els.curveOther.textContent = "D"; }
         els.q3Scenario.textContent = s.q3_text;
         task_d_shift = s.shiftType === 'D' ? s.direction * 30 : 0;
         task_s_shift = s.shiftType === 'S' ? s.direction * 30 : 0;
@@ -515,6 +504,11 @@
         document.querySelectorAll('.fade-in').forEach(el => { el.style.animation = 'none'; el.offsetHeight; el.style.animation = null; });
     }
 
+    // Guide Handlers
+    els.btnOpenGuide.onclick = () => els.guideModal.classList.remove('hidden');
+    els.btnCloseGuide.onclick = () => els.guideModal.classList.add('hidden');
+    els.guideModal.onclick = (e) => { if(e.target === els.guideModal) els.guideModal.classList.add('hidden'); };
+
     els.btnReset.addEventListener('click', () => { q3Mode = false; userQ3Shift = null; userQ3Price = null; els.q3ShiftBtns.forEach(b => b.classList.remove('selected-active')); els.q3PriceBtns.forEach(b => b.classList.remove('selected-active')); drawGraph(); });
 
     els.q1Radios.forEach(r => {
@@ -524,7 +518,10 @@
             if (ans === s.q1_ans) {
                 els.q1Fb.classList.add('bg-green-100', 'text-green-800'); els.q1Fb.innerHTML = '<i class="fas fa-check-circle"></i> Верно!';
                 if(!els.q1Fb.dataset.solved) { score++; els.score.textContent = score; els.score.classList.add('pulse-green'); setTimeout(()=>els.score.classList.remove('pulse-green'), 1000); els.q1Fb.dataset.solved = "true"; }
-            } else { els.q1Fb.classList.add('bg-red-100', 'text-red-800', 'shake'); els.q1Fb.innerHTML = '<i class="fas fa-times-circle"></i> Ошибка.'; }
+            } else { 
+                els.q1Fb.classList.add('bg-red-100', 'text-red-800', 'shake'); els.q1Fb.innerHTML = '<i class="fas fa-times-circle"></i> Ошибка.'; 
+                errorCount++;
+            }
         });
     });
 
@@ -543,18 +540,14 @@
 
     els.btnCheckQ3.addEventListener('click', () => {
         if (!userQ3Shift || !userQ3Price) return alert("Пройдите оба шага.");
-        const correctShift = scenarios[currentIndex].q3_ans;
+        const s = scenarios[currentIndex];
         let eq1 = getEquilibrium(task_d_shift, task_s_shift);
-        let extraD = correctShift.startsWith('D') ? (correctShift.endsWith('up') ? 25 : -25) : 0;
-        let extraS = correctShift.startsWith('S') ? (correctShift.endsWith('up') ? 25 : -25) : 0;
+        let extraD = s.q3_ans.startsWith('D') ? (s.q3_ans.endsWith('up') ? 25 : -25) : 0;
+        let extraS = s.q3_ans.startsWith('S') ? (s.q3_ans.endsWith('up') ? 25 : -25) : 0;
         let eq2 = getEquilibrium(task_d_shift + extraD, task_s_shift + extraS);
         let correctPrice = (eq2.p > eq1.p) ? 'up' : 'down';
-
-        let shiftOk = (userQ3Shift === correctShift); let priceOk = (userQ3Price === correctPrice);
+        let shiftOk = (userQ3Shift === s.q3_ans); let priceOk = (userQ3Price === correctPrice);
         els.q3Fb.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800', 'shake');
-        els.q3ShiftBtns.forEach(b => b.classList.remove('selected-correct', 'selected-wrong'));
-        els.q3PriceBtns.forEach(b => b.classList.remove('selected-correct', 'selected-wrong'));
-
         if (shiftOk && priceOk) {
             els.q3Fb.classList.add('bg-green-100', 'text-green-800'); els.q3Fb.innerHTML = `✅ <b>Идеально!</b>`;
             document.querySelector(`.q3-btn[data-ans="${userQ3Shift}"]`).classList.add('selected-correct');
@@ -565,6 +558,7 @@
             if (!shiftOk) document.querySelector(`.q3-btn[data-ans="${userQ3Shift}"]`).classList.add('selected-wrong'); else document.querySelector(`.q3-btn[data-ans="${userQ3Shift}"]`).classList.add('selected-correct');
             if (!priceOk) document.querySelector(`.q3-btn[data-ans="${userQ3Price}"]`).classList.add('selected-wrong'); else document.querySelector(`.q3-btn[data-ans="${userQ3Price}"]`).classList.add('selected-correct');
             els.q3Fb.innerHTML = `❌ <b>Ошибка</b>`;
+            errorCount++;
         }
     });
 
@@ -581,10 +575,8 @@
         if (!userAnswer) return alert('Пожалуйста, напиши свой ответ перед проверкой!');
         const s = scenarios[currentIndex]; const dirText = s.direction === 1 ? 'увеличилось' : 'уменьшилось';
         els.btnAiCheck.disabled = true; els.aiLoading.classList.remove('hidden'); els.aiResultBox.classList.add('hidden');
-
-        const sysInstruction = `Ты строгий эксперт ЕГЭ по обществознанию. Проверь задание 21 (пункт 2). Требуется: "Укажите одно любое обстоятельство (неценовой фактор) и объясните его влияние". Рынок: ${s.market}. Ожидаемое изменение: ${s.targetType} ${dirText}. Критерии: 1. factor_correct: Назван адекватный фактор? 2. explanation_detailed: Дано объяснение? 3. market_mentioned: Ученик ЯВНО написал название рынка в ответе? Верни JSON.`;
-        const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ ученика: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
-
+        const sysInstruction = `Ты строгий эксперт ЕГЭ. Проверь пункт 2 задания 21. Требуется: фактор + объяснение влияния. Рынок: ${s.market}. Изменение: ${s.targetType} ${dirText}. Критерии: 1. factor_correct: Назван фактор? 2. explanation_detailed: Дано объяснение? 3. market_mentioned: Ученик ЯВНО написал название рынка в ответе? Верни JSON.`;
+        const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
         try {
             const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             const data = JSON.parse(result.candidates?.[0]?.content?.parts?.[0]?.text);
@@ -596,64 +588,54 @@
             updateCrit('ai-crit-1', data.factor_correct); updateCrit('ai-crit-2', data.explanation_detailed); updateCrit('ai-crit-3', data.market_mentioned);
             els.aiComment.textContent = data.expert_comment;
             const isPerfect = data.factor_correct && data.explanation_detailed && data.market_mentioned;
-            els.aiScoreBadge.textContent = isPerfect ? 'Макс. балл' : 'Ошибки (0)';
+            if (!isPerfect) errorCount++;
+            els.aiScoreBadge.textContent = isPerfect ? 'Макс. балл' : 'Ошибка (0)';
             els.aiScoreBadge.className = isPerfect ? 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-green-500' : 'px-1.5 py-0.5 rounded text-[9px] font-bold text-white bg-red-500';
             els.aiLoading.classList.add('hidden'); els.aiResultBox.classList.remove('hidden'); els.aiResultBox.classList.add('fade-in');
         } catch (error) { alert("Ошибка сервера."); els.aiLoading.classList.add('hidden'); } 
         finally { els.btnAiCheck.disabled = false; }
     });
 
-    els.btnQ2Ideal.addEventListener('click', () => {
-        const s = scenarios[currentIndex]; els.q2Factor.textContent = s.q2_factor; els.q2Exp.textContent = s.q2_explanation;
-        els.q2IdealBox.classList.remove('hidden'); els.q2IdealBox.classList.add('fade-in');
-    });
+    els.btnQ2Ideal.onclick = () => { const s = scenarios[currentIndex]; els.q2Factor.textContent = s.q2_factor; els.q2Exp.textContent = s.q2_explanation; els.q2IdealBox.classList.remove('hidden'); els.q2IdealBox.classList.add('fade-in'); };
 
-    // ЛОГИКА ОТДЫХА И ПЕРЕХОДА
     function showBreakModal() {
-        els.breakModal.classList.remove('hidden');
-        els.breakModal.classList.add('flex');
-        
-        els.breakTextScreen.classList.remove('hidden');
-        els.breakTextScreen.classList.add('flex');
-        els.breakVideoScreen.classList.add('hidden');
-        els.breakVideoScreen.classList.remove('flex');
-        
-        setTimeout(() => {
-            els.breakTextScreen.classList.remove('flex');
-            els.breakTextScreen.classList.add('hidden');
-            els.breakVideoScreen.classList.remove('hidden');
-            els.breakVideoScreen.classList.add('flex');
-            els.breakVideo.play();
-        }, 2500); // 2.5 секунды показываем текст "Нужно отдохнуть"
+        els.breakModal.classList.remove('hidden'); els.breakModal.classList.add('flex');
+        els.breakTextScreen.classList.remove('hidden'); els.breakVideoScreen.classList.add('hidden');
+        setTimeout(() => { els.breakTextScreen.classList.add('hidden'); els.breakVideoScreen.classList.remove('hidden'); els.breakVideoScreen.classList.add('flex'); els.breakVideo.play(); }, 2500);
     }
+    els.btnCloseBreak.onclick = () => { els.breakVideo.pause(); els.breakVideo.currentTime = 0; els.breakModal.classList.add('hidden'); goToNextScenario(); };
 
-    els.btnCloseBreak.addEventListener('click', () => {
-        els.breakVideo.pause();
-        els.breakVideo.currentTime = 0;
-        els.breakModal.classList.add('hidden');
-        els.breakModal.classList.remove('flex');
+    function showEasterEggModal() {
+        easterEggShown = true;
+        els.easterEggModal.classList.remove('hidden');
+        els.easterEggModal.classList.add('flex');
+    }
+    els.btnCloseEasterEgg.onclick = () => {
+        els.easterEggModal.classList.add('hidden');
+        els.easterEggModal.classList.remove('flex');
         goToNextScenario();
-    });
+    };
 
-    function goToNextScenario() {
-        currentIndex = (currentIndex + 1) % scenarios.length;
-        delete els.q1Fb.dataset.solved; delete els.q3Fb.dataset.solved;
-        loadScenario(currentIndex);
-        document.querySelector('.overflow-y-auto').scrollTo({top: 0, behavior: 'smooth'});
+    function goToNextScenario() { 
+        currentIndex = (currentIndex + 1) % scenarios.length; 
+        delete els.q1Fb.dataset.solved; delete els.q3Fb.dataset.solved; 
+        loadScenario(currentIndex); 
+        document.querySelector('.overflow-y-auto').scrollTo({top: 0, behavior: 'smooth'}); 
     }
-
-    els.btnNext.addEventListener('click', () => {
-        completedScenariosCount++;
-        // Вызываем отдых каждые 7 сценариев
-        if (completedScenariosCount % 7 === 0) {
-            showBreakModal();
+    
+    els.btnNext.onclick = () => { 
+        completedScenariosCount++; 
+        
+        if (completedScenariosCount === 4 && errorCount === 0 && !easterEggShown) {
+            showEasterEggModal();
+        } else if (completedScenariosCount % 7 === 0) {
+            showBreakModal(); 
         } else {
-            goToNextScenario();
+            goToNextScenario(); 
         }
-    });
+    };
 
     loadScenario(0);
-
 </script>
 </body>
 </html>
