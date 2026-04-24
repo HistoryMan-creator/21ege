@@ -663,10 +663,11 @@
         ctx.fillStyle = color; ctx.font = 'bold 22px Inter'; ctx.fillText(label, labelPt.x + 2, labelPt.y + 6);
     };
 
-    const drawThickEgeArrow = (isD, shiftVal) => {
-        if (shiftVal === 0) return;
+    const drawThickEgeArrow = (isD, startShift, endShift) => {
+        let shiftVal = endShift - startShift;
+        if (Math.abs(shiftVal) < 2) return;
         let pLevel = isD ? 75 : 25; 
-        let qOld = isD ? (100 - pLevel) : pLevel;
+        let qOld = (isD ? (100 - pLevel) : pLevel) + startShift;
         let qNew = qOld + shiftVal;
         let ptOld = getCoords(qOld, pLevel); let ptNew = getCoords(qNew, pLevel);
         let midX = (ptOld.x + ptNew.x) / 2; let y = ptOld.y;
@@ -694,24 +695,33 @@
         ctx.fillText('P', config.originX - 35, 25); ctx.fillText('Q', 800 - 30, config.originY + 30);
         ctx.font = '20px Inter'; ctx.fillText('0', config.originX - 22, config.originY + 22);
         const s = scenarios[currentIndex];
+        
         if (s.shiftType === 'D') {
-            drawBoundedCurve(true, 0, '#60a5fa', 'D'); drawBoundedCurve(true, task_d_shift, '#1e3a8a', 'D1'); drawBoundedCurve(false, 0, '#f87171', 'S'); 
-            drawThickEgeArrow(true, task_d_shift);
+            drawBoundedCurve(true, 0, '#60a5fa', 'D'); 
+            drawBoundedCurve(true, task_d_shift, '#1e3a8a', 'D1'); 
+            drawBoundedCurve(false, 0, '#f87171', 'S'); 
+            drawThickEgeArrow(true, 0, task_d_shift);
         } else {
-            drawBoundedCurve(false, 0, '#f87171', 'S'); drawBoundedCurve(false, task_s_shift, '#991b1b', 'S1'); drawBoundedCurve(true, 0, '#60a5fa', 'D');
-            drawThickEgeArrow(false, task_s_shift);
+            drawBoundedCurve(false, 0, '#f87171', 'S'); 
+            drawBoundedCurve(false, task_s_shift, '#991b1b', 'S1'); 
+            drawBoundedCurve(true, 0, '#60a5fa', 'D');
+            drawThickEgeArrow(false, 0, task_s_shift);
         }
-        let eq1 = getEquilibrium(task_d_shift, task_s_shift); let eq1Coords = getCoords(eq1.q, eq1.p);
+        
+        let eq1 = s.shiftType === 'D' ? getEquilibrium(task_d_shift, 0) : getEquilibrium(0, task_s_shift); 
+        let eq1Coords = getCoords(eq1.q, eq1.p);
         ctx.beginPath(); ctx.setLineDash([6, 6]); ctx.strokeStyle = '#6b7280'; ctx.lineWidth = 2;
         ctx.moveTo(config.originX, eq1Coords.y); ctx.lineTo(eq1Coords.x, eq1Coords.y);
         ctx.moveTo(eq1Coords.x, config.originY); ctx.lineTo(eq1Coords.x, eq1Coords.y); ctx.stroke(); ctx.setLineDash([]);
         ctx.beginPath(); ctx.arc(eq1Coords.x, eq1Coords.y, 7, 0, Math.PI * 2);
         ctx.fillStyle = '#111827'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
         ctx.font = 'bold 20px Inter'; ctx.fillText('E', eq1Coords.x + 12, eq1Coords.y - 12);
+        
         if (q3Mode && userQ3Shift) {
             let extraD = userQ3Shift.startsWith('D') ? (userQ3Shift.endsWith('up') ? 25 : -25) : 0;
             let extraS = userQ3Shift.startsWith('S') ? (userQ3Shift.endsWith('up') ? 25 : -25) : 0;
-            let finalDShift = task_d_shift + extraD; let finalSShift = task_s_shift + extraS;
+            let finalDShift = (s.shiftType === 'D' ? task_d_shift : 0) + extraD; 
+            let finalSShift = (s.shiftType === 'S' ? task_s_shift : 0) + extraS;
             let isQ3D = userQ3Shift.startsWith('D');
             drawBoundedCurve(isQ3D, isQ3D ? finalDShift : finalSShift, isQ3D ? '#3b82f6' : '#ef4444', isQ3D ? 'D2' : 'S2', true);
             let eq2 = getEquilibrium(finalDShift, finalSShift); let eq2Coords = getCoords(eq2.q, eq2.p);
@@ -723,14 +733,29 @@
             ctx.fillStyle = '#059669'; ctx.font = 'bold 20px Inter'; ctx.fillText('E2', eq2Coords.x + 12, eq2Coords.y - 12);
         }
 
-        let hasInteractive = interactive_d_shift !== 0 || interactive_s_shift !== 0;
+        let hasInteractive = shifts.D !== 0 || shifts.D1 !== 0 || shifts.S !== 0 || shifts.S1 !== 0;
         if (hasInteractive) {
-            let totalD = task_d_shift + interactive_d_shift;
-            let totalS = task_s_shift + interactive_s_shift;
-            if (interactive_d_shift !== 0) drawBoundedCurve(true, totalD, '#a855f7', 'D(инт)', true); 
-            if (interactive_s_shift !== 0) drawBoundedCurve(false, totalS, '#f59e0b', 'S(инт)', true); 
+            let activeD = s.shiftType === 'D' ? task_d_shift : 0;
+            let activeS = s.shiftType === 'S' ? task_s_shift : 0;
             
-            let eqInter = getEquilibrium(totalD, totalS);
+            if (shifts.D !== 0) {
+                drawBoundedCurve(true, shifts.D, '#a855f7', 'D(инт)', true);
+                activeD = shifts.D;
+            }
+            if (shifts.D1 !== 0) {
+                drawBoundedCurve(true, task_d_shift + shifts.D1, '#a855f7', 'D1(инт)', true);
+                activeD = task_d_shift + shifts.D1;
+            }
+            if (shifts.S !== 0) {
+                drawBoundedCurve(false, shifts.S, '#f59e0b', 'S(инт)', true);
+                activeS = shifts.S;
+            }
+            if (shifts.S1 !== 0) {
+                drawBoundedCurve(false, task_s_shift + shifts.S1, '#f59e0b', 'S1(инт)', true);
+                activeS = task_s_shift + shifts.S1;
+            }
+
+            let eqInter = getEquilibrium(activeD, activeS);
             let eqInterCoords = getCoords(eqInter.q, eqInter.p);
             ctx.beginPath(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2;
             ctx.moveTo(config.originX, eqInterCoords.y); ctx.lineTo(eqInterCoords.x, eqInterCoords.y);
