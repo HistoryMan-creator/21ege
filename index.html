@@ -71,7 +71,10 @@
             <button id="btn-save-key" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg transition-transform transform active:scale-95 w-full">
                 Сохранить и начать
             </button>
-            <button id="btn-close-key-modal" class="mt-3 text-xs text-gray-400 hover:text-gray-600 underline hidden">Отмена</button>
+            <div class="flex gap-4 w-full justify-center mt-3">
+                <button id="btn-skip-key" class="text-xs text-gray-400 hover:text-gray-600 underline">Пропустить</button>
+                <button id="btn-close-key-modal" class="text-xs text-gray-400 hover:text-gray-600 underline hidden">Отмена</button>
+            </div>
         </div>
     </div>
 
@@ -197,8 +200,14 @@
                 <div class="flex items-center gap-1.5"><div class="w-3 md:w-4 h-1 md:h-1.5 bg-red-500 rounded-sm shadow-sm"></div> S - Предложение</div>
             </div>
 
-            <div class="flex-1 min-h-0 relative flex justify-center items-center p-1 md:p-3 bg-white">
-                <canvas id="graphCanvas" width="800" height="550" class="w-full h-full object-contain"></canvas>
+            <!-- ИНТЕРАКТИВНЫЙ ОВЕРЛЕЙ -->
+            <div id="interactive-overlay" class="absolute top-16 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur px-4 py-2 rounded-xl shadow-xl border border-indigo-200 text-sm font-bold text-gray-800 opacity-0 pointer-events-none transition-opacity duration-300 z-50 flex flex-col items-center leading-tight">
+                <span id="io-shift-text" class="text-indigo-600 flex items-center gap-1.5"></span>
+                <span id="io-price-text" class="text-[11px] text-gray-500 font-medium flex items-center gap-1.5 mt-0.5"></span>
+            </div>
+
+            <div class="flex-1 min-h-0 relative flex justify-center items-center p-1 md:p-3 bg-white w-full h-full">
+                <canvas id="graphCanvas" class="cursor-pointer touch-none"></canvas>
             </div>
 
             <div class="px-3 py-2 md:px-4 md:py-3 bg-yellow-50 border-t-2 border-yellow-300 text-[11px] md:text-[14px] flex-shrink-0 overflow-y-auto max-h-[35%] text-gray-800 leading-snug">
@@ -242,7 +251,7 @@
                     </h3>
                     <p class="text-[10px] md:text-[11px] text-gray-500 mb-2 leading-tight">Укажите неценовой фактор и объясните его влияние.</p>
                     
-                    <textarea id="q2-input" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-0 focus:border-purple-500 transition-colors text-[11px] md:text-[13px] resize-none mb-2 shadow-inner" placeholder="Фактор + объяснение + рынок..."></textarea>
+                    <textarea id="q2-input" rows="2" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-0 focus:border-purple-500 transition-colors text-[11px] md:text-[13px] resize-none mb-2 shadow-inner" placeholder="Например: Рост доходов. В связи с ростом доходов... что привело к росту спроса на рынке..."></textarea>
                     
                     <div class="flex gap-2">
                         <button id="btn-ai-check" class="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 text-white px-3 py-1.5 md:py-2 rounded-lg font-medium shadow-sm flex justify-center items-center gap-1.5 text-[11px] md:text-[12px] transition-all active:scale-95">
@@ -285,8 +294,7 @@
                             <h4 class="font-bold text-green-800 text-[10px]"><i class="fas fa-star text-yellow-500 mr-1"></i> Ответ эксперта</h4>
                         </div>
                         <div class="bg-green-50/50 p-2 text-[11px] md:text-[12px] text-gray-800 leading-tight">
-                            <strong class="text-indigo-700">Фактор:</strong> <span id="q2-ans-factor"></span><br>
-                            <span id="q2-ans-explanation" class="mt-1 block"></span>
+                            <span id="q2-ans-combined"></span>
                         </div>
                     </div>
                 </div>
@@ -359,7 +367,8 @@
         q1Radios: document.querySelectorAll('input[name="q1"]'), q1Fb: document.getElementById('q1-feedback'),
         q2Input: document.getElementById('q2-input'), btnAiCheck: document.getElementById('btn-ai-check'), btnQ2Ideal: document.getElementById('btn-check-q2-ideal'),
         aiLoading: document.getElementById('ai-loading'), aiResultBox: document.getElementById('ai-result-box'), aiScoreBadge: document.getElementById('ai-score-badge'), aiComment: document.getElementById('ai-comment-text'),
-        q2IdealBox: document.getElementById('q2-ideal-box'), q2Factor: document.getElementById('q2-ans-factor'), q2Exp: document.getElementById('q2-ans-explanation'),
+        q2IdealBox: document.getElementById('q2-ideal-box'), q2Combined: document.getElementById('q2-ans-combined'),
+        interactiveOverlay: document.getElementById('interactive-overlay'),
         q3ShiftBtns: document.querySelectorAll('.q3-btn[data-ans*="_"]'), q3PriceBtns: document.querySelectorAll('.q3-btn[data-ans="up"], .q3-btn[data-ans="down"]'),
         btnCheckQ3: document.getElementById('btn-check-q3'), q3Fb: document.getElementById('q3-feedback'),
         btnNext: document.getElementById('btn-next-scenario'), btnReset: document.getElementById('btn-reset-graph'),
@@ -371,6 +380,7 @@
         apiKeyModal: document.getElementById('api-key-modal'),
         apiKeyInput: document.getElementById('api-key-input'),
         btnSaveKey: document.getElementById('btn-save-key'),
+        btnSkipKey: document.getElementById('btn-skip-key'),
         btnOpenSettings: document.getElementById('btn-open-settings'),
         btnCloseKeyModal: document.getElementById('btn-close-key-modal')
     };
@@ -379,11 +389,14 @@
     if (!apiKey) {
         els.apiKeyModal.classList.remove('hidden');
         els.apiKeyModal.classList.add('flex');
+        els.btnSkipKey.classList.remove('hidden');
+        els.btnCloseKeyModal.classList.add('hidden');
     }
 
     els.btnOpenSettings.onclick = () => {
         els.apiKeyInput.value = apiKey; // Показываем текущий ключ, если есть
-        els.btnCloseKeyModal.classList.remove('hidden'); // Показываем кнопку отмены, так как ключ может уже быть
+        els.btnCloseKeyModal.classList.remove('hidden'); // Показываем кнопку отмены
+        els.btnSkipKey.classList.add('hidden'); // Скрываем пропустить
         els.apiKeyModal.classList.remove('hidden');
         els.apiKeyModal.classList.add('flex');
     };
@@ -400,6 +413,11 @@
         }
     };
 
+    els.btnSkipKey.onclick = () => {
+        els.apiKeyModal.classList.add('hidden');
+        els.apiKeyModal.classList.remove('flex');
+    };
+
     els.btnCloseKeyModal.onclick = () => {
         if(apiKey) { // Позволяем закрыть только если ключ уже задан
             els.apiKeyModal.classList.add('hidden');
@@ -409,36 +427,36 @@
     // ------------------------------------
 
     const scenarios = [
-        { market: "рынок легковых автомобилей", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Рост доходов потребителей", q2_explanation: "В связи с экономическим подъемом реальные доходы населения выросли. Люди стали чаще покупать новые машины, что привело к росту спроса на рынке легковых автомобилей.", q3_text: "Как изменятся предложение и равновесная цена на данном рынке, если государство увеличит налоги на производителей автомобилей при прочих равных условиях?", q3_ans: "S_down" },
-        { market: "рынок отечественных свежих овощей", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Благоприятные погодные условия", q2_explanation: "Благодаря идеальным погодным условиям фермеры собрали рекордный урожай, что привело к увеличению предложения на рынке отечественных свежих овощей.", q3_text: "Как изменятся спрос и равновесная цена, если в СМИ появится серия передач о пользе ежедневного употребления свежих овощей?", q3_ans: "D_up" },
-        { market: "рынок путевок на зарубежные курорты", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Снижение доходов населения", q2_explanation: "Из-за экономического кризиса реальные доходы населения упали, люди стали экономить на отдыхе, что привело к снижению спроса на рынке туристических путевок на зарубежные курорты.", q3_text: "Как изменятся предложение и равновесная цена, если сразу несколько крупных туроператоров обанкротятся и уйдут с рынка?", q3_ans: "S_down" },
-        { market: "рынок рыбной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Ухудшение экологической обстановки", q2_explanation: "Из-за загрязнения водоемов улов рыбы рыболовецкими компаниями значительно сократился, что привело к уменьшению предложения на рынке рыбной продукции.", q3_text: "Как изменятся спрос и равновесная цена, если значительно вырастут цены на мясо (товар-субститут)?", q3_ans: "D_up" },
-        { market: "рынок услуг салонов красоты", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Увеличение числа производителей", q2_explanation: "В связи с популярностью бьюти-бизнеса открылось множество новых студий, что привело к росту предложения на рынке услуг салонов красоты.", q3_text: "Как изменятся спрос и равновесная цена, если мода на сложные косметические процедуры пройдет и люди предпочтут естественность?", q3_ans: "D_down" },
-        { market: "рынок планшетных компьютеров", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Переход школ на дистанционное обучение", q2_explanation: "Из-за дистанционного обучения родителям потребовалось массово закупать технику для детей, что вызвало рост спроса на рынке планшетных компьютеров.", q3_text: "Как изменятся предложение и равновесная цена, если повысятся таможенные пошлины на ввоз импортных микрочипов?", q3_ans: "S_down" },
-        { market: "рынок кофе навынос", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Изменение вкусов и предпочтений (мода)", q2_explanation: "В обществе сформировалась мода на употребление кофе на ходу, что привело к росту спроса на рынке кофе навынос.", q3_text: "Как изменятся предложение и равновесная цена, если из-за неурожая в Бразилии резко подорожают кофейные зерна?", q3_ans: "S_down" },
-        { market: "рынок ипотечного кредитования", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Повышение процентных ставок", q2_explanation: "Банки увеличили ставки по ипотеке. Кредиты стали слишком дорогими, что снизило спрос на рынке ипотечного кредитования.", q3_text: "Как изменятся предложение и равновесная цена жилья в новостройках, если государство введет строгие экологические требования к застройщикам?", q3_ans: "S_down" },
-        { market: "рынок платных онлайн-курсов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Необходимость переобучения", q2_explanation: "Из-за автоматизации многих профессий людям потребовалось осваивать новые специальности, что привело к росту спроса на рынке платных онлайн-курсов.", q3_text: "Как изменятся предложение и равновесная цена, если государство предоставит онлайн-школам крупные налоговые льготы?", q3_ans: "S_up" },
-        { market: "рынок велосипедов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Сезонность / Эко-тренды", q2_explanation: "С наступлением тепла и модой на здоровый образ жизни люди стали пересаживаться на велосипеды, что увеличило спрос на рынке велосипедов.", q3_text: "Как изменятся предложение и равновесная цена, если логистика доставки рам из-за рубежа сильно подорожает?", q3_ans: "S_down" },
-        { market: "рынок смартфонов", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Дефицит комплектующих", q2_explanation: "Кризис полупроводников привел к нехватке микрочипов, заводы снизили объемы производства, предложение на рынке смартфонов упало.", q3_text: "Как изменятся спрос и равновесная цена, если производители анонсируют выход принципиально новой модели в следующем месяце?", q3_ans: "D_down" },
-        { market: "рынок зимней верхней одежды", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Погодные условия", q2_explanation: "Спрогнозирована аномально теплую зиму без морозов. Люди решили не обновлять гардероб, что вызвало падение спроса на рынке зимней верхней одежды.", q3_text: "Как изменятся предложение и равновесная цена, если изобретут новый дешевый синтетический утеплитель?", q3_ans: "S_up" },
-        { market: "рынок молочной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Удорожание кормов", q2_explanation: "Из-за засухи цены на сено и корма выросли. Издержки фермерских хозяйств увеличились, предложение на рынке молочной продукции сократилось.", q3_text: "Как изменятся спрос и равновесная цена, если правительство выдаст семьям сертификаты на бесплат получение молока?", q3_ans: "D_up" },
-        { market: "рынок авиаперевозок", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Рост цен на ресурсы (топливо)", q2_explanation: "На мировом рынке подорожала нефть. Затраты авиакомпаний выросли, они сократили рейсы, предложение на рынке авиаперевозок снизилось.", q3_text: "Как изменятся спрос и равновесная цена, если наступит сезон летних отпусков?", q3_ans: "D_up" },
-        { market: "рынок фитнес-услуг", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Падение доходов населения", q2_explanation: "В условиях экономического спада реальные доходы снизились. Многие отказались от абонементов, спрос на рынке фитнес-услуг упал.", q3_text: "Как изменятся предложение и равновесная цена, если арендная плата за залы в торговых центрах значительно снизится?", q3_ans: "S_up" },
-        { market: "рынок электронных книг", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Рост цен на товары-заменители", q2_explanation: "Из-за подорожания бумаги цены на печатные книги взлетели. Читатели перешли на цифровой формат, спрос на рынке электронных книг вырос.", q3_text: "Как изменятся предложение и равновесная цена, если появится программа, позволяющая легко верстать книги без издательств?", q3_ans: "S_up" },
-        { market: "рынок услуг такси", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Ужесточение регулирования", q2_explanation: "Введено лицензирование. Многие водители не смогли выполнить требования и ушли из профессии, предложение на рынке услуг такси упало.", q3_text: "Как изменятся спрос и равновесная цена в день сильного снегопада и транспортного коллапса?", q3_ans: "D_up" },
-        { market: "рынок деревянной мебели", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Снижение цен на сырье", q2_explanation: "На рынке образовался переизбыток дешевых пиломатериалов. Издержки фабрик упали, предложение на рынке деревянной мебели выросло.", q3_text: "Как изменятся спрос и равновесная цена, если в стране резко упадут темпы ввода нового жилья?", q3_ans: "D_down" },
-        { market: "рынок спортивного питания", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Популяризация ЗОЖ", q2_explanation: "В обществе растет интерес к фитнесу, люди чаще посещают тренажерные залы, что ведет к росту спроса на рынке спортивного питания.", q3_text: "Как изменятся предложение и равновесная цена, если государство выделит гранты производителям спортпита?", q3_ans: "S_up" },
-        { market: "рынок отечественных автомобилей", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Рост цен на ресурсы (металл)", q2_explanation: "Подорожал листовой прокат. Затраты автозаводов выросли, что привело к снижению предложения на рынке отечественных автомобилей.", q3_text: "Как изменятся спрос и равновесная цена, если государство запустит программу льготного автокредитования?", q3_ans: "D_up" },
-        { market: "рынок детских игрушек", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Демографический спад", q2_explanation: "Снижение рождаемости привело к уменьшению целевой аудитории потребителей, что вызвало падение спроса на рынке детских игрушек.", q3_text: "Как изменятся предложение и равновесная цена, если повысят ввозные пошлины на зарубежные игрушки?", q3_ans: "S_down" },
-        { market: "рынок шоколадных изделий", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Природные катаклизмы", q2_explanation: "Засуха вызвала неурожай какао-бобов. Возник дефицит сырья, предложение на рынке шоколадных изделий упало.", q3_text: "Как изменятся спрос и равновесная цена, если врачи опубликуют исследование о вреде сладкого для сердца?", q3_ans: "D_down" },
-        { market: "рынок услуг репетиторов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Усложнение экзаменов", q2_explanation: "Министерство образования усложнило формат ЕГЭ. Родители стали чаще нанимать частных педагогов, спрос на рынке услуг репетиторов вырос.", q3_text: "Как изменятся предложение и равновесная цена, если студентам вузов официально разрешат подрабатывать без налогов?", q3_ans: "S_up" },
-        { market: "рынок строительных материалов", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Внедрение новых технологий", q2_explanation: "Заводы внедрили новые энергосберегающие печи, что снизило издержки и позволило увеличить предложение на рынке строительных материалов.", q3_text: "Как изменятся спрос и равновесная цена, если банки резко повысят ставки по кредитам для девелоперов?", q3_ans: "D_down" },
-        { market: "рынок антивирусного ПО", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Рост числа киберугроз", q2_explanation: "Из-за хакерских атак пользователи стали больше заботиться о безопасности, спрос на рынке антивирусного ПО взлетел.", q3_text: "Как изменятся предложение и равновесная цена, если государство запретит использование зарубежного софта?", q3_ans: "S_down" },
-        { market: "рынок мяса птицы", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Государственные субсидии", q2_explanation: "Правительство выделило птицефабрикам субсидии. Это позволило компаниям расширить производство, предложение на рынке мяса птицы выросло.", q3_text: "Как изменятся спрос и равновесная цена, если в новостях появятся слухи о вспышке птичьего гриппа?", q3_ans: "D_down" },
-        { market: "рынок услуг кинотеатров", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Развитие товаров-заменителей", q2_explanation: "Стриминговые сервисы стали дешевле. Люди стали реже ходить в кино, предпочитая дом, спрос на рынке услуг кинотеатров упал.", q3_text: "Как изменятся предложение и равновесная цена, если из-за кризиса несколько крупных сетей закроются?", q3_ans: "S_down" },
-        { market: "рынок ювелирных украшений", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Снижение реальных доходов", q2_explanation: "В условиях инфляции доходы людей упали. Украшения не являются товаром первой необходимости, спрос на рынке ювелирных украшений обвалился.", q3_text: "Как изменятся предложение и равновесная цена, если геологи откроют новые месторождения золота и алмазов?", q3_ans: "S_up" },
-        { market: "рынок клининговых услуг", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Увеличение числа фирм", q2_explanation: "Низкий порог входа привлек предпринимателей. Появление новых компаний увеличило предложение на рынке клининговых услуг.", q3_text: "Как изменятся спрос и равновесная цена, если начнется массовое строительство новых офисных центров?", q3_ans: "D_up" },
-        { market: "рынок бумажной канцелярии", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Изменение предпочтений (цифровизация)", q2_explanation: "Офисы и школы перешли на электронный документооборот, из-за чего потребность в обычной бумаге (спрос) на рынке бумажной канцелярии упала.", q3_text: "Как изменятся предложение и равновесная цена, если тарифы на электричество для целлюлозных комбинатов возрастут?", q3_ans: "S_down" }
+        { market: "рынок легковых автомобилей", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Уровень доходов потребителей", q2_explanation: "В связи с экономическим подъемом реальные доходы населения выросли. Люди стали чаще покупать новые машины, что привело к росту спроса на рынке легковых автомобилей.", q3_text: "Как изменятся предложение и равновесная цена на данном рынке, если государство увеличит налоги на производителей автомобилей при прочих равных условиях?", q3_ans: "S_down" },
+        { market: "рынок отечественных свежих овощей", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Природно-климатические условия", q2_explanation: "Благоприятные погодные условия позволили фермерам собрать рекордный урожай, что привело к увеличению предложения на рынке отечественных свежих овощей.", q3_text: "Как изменятся спрос и равновесная цена, если в СМИ появится серия передач о пользе ежедневного употребления свежих овощей?", q3_ans: "D_up" },
+        { market: "рынок путевок на зарубе курорты", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Уровень доходов потребителей", q2_explanation: "Из-за экономического кризиса реальные доходы населения упали. Люди стали экономить на отдыхе, что привело к снижению спроса на рынке туристических путевок на зарубежные курорты.", q3_text: "Как изменятся предложение и равновесная цена, если сразу несколько крупных туроператоров обанкротятся и уйдут с рынка?", q3_ans: "S_down" },
+        { market: "рынок рыбной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Природно-климатические условия", q2_explanation: "Из-за ухудшения экологической обстановки в водоемах улов рыбы значительно сократился, что привело к уменьшению предложения на рынке рыбной продукции.", q3_text: "Как изменятся спрос и равновесная цена, если значительно вырастут цены на мясо (товар-заменитель)?", q3_ans: "D_up" },
+        { market: "рынок услуг салонов красоты", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Количество продавцов на рынке", q2_explanation: "В связи с популярностью бьюти-бизнеса открылось множество новых студий. Увеличение числа фирм привело к росту предложения на рынке услуг салонов красоты.", q3_text: "Как изменятся спрос и равновесная цена, если мода на сложные косметические процедуры пройдет и люди предпочтут естественность?", q3_ans: "D_down" },
+        { market: "рынок планшетных компьютеров", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Вкусы и предпочтения потребителей", q2_explanation: "Из-за перехода на дистанционное обучение потребность в технике возросла. Формирование новых предпочтений вызвало рост спроса на рынке планшетных компьютеров.", q3_text: "Как изменятся предложение и равновесная цена, если повысятся таможенные пошлины на ввоз импортных микрочипов?", q3_ans: "S_down" },
+        { market: "рынок кофе навынос", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Вкусы и предпочтения потребителей (мода)", q2_explanation: "В обществе сформировалась мода на употребление кофе на ходу, что привело к росту спроса на рынке кофе навынос.", q3_text: "Как изменятся предложение и равновесная цена, если из-за неурожая в Бразилии резко подорожают кофейные зерна?", q3_ans: "S_down" },
+        { market: "рынок ипотечного кредитования", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Цены на дополняющие товары", q2_explanation: "Резкое подорожание квартир в новостройках привело к тому, что кредиты стали брать реже, что снизило спрос на рынке ипотечного кредитования.", q3_text: "Как изменятся предложение и равновесная цена жилья в новостройках, если государство введет строгие экологические требования к застройщикам?", q3_ans: "S_down" },
+        { market: "рынок платных онлайн-курсов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Вкусы и предпочтения потребителей", q2_explanation: "Из-за необходимости осваивать новые специальности интерес людей к дистанционному образованию вырос, что привело к росту спроса на рынке платных онлайн-курсов.", q3_text: "Как изменятся предложение и равновесная цена, если государство предоставит онлайн-школам крупные налоговые льготы?", q3_ans: "S_up" },
+        { market: "рынок велосипедов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Сезонность", q2_explanation: "С наступлением теплого времени года люди стали чаще покупать средства для активного отдыха на улице, что увеличило спрос на рынке велосипедов.", q3_text: "Как изменятся предложение и равновесная цена, если логистика доставки рам из-за рубежа сильно подорожает?", q3_ans: "S_down" },
+        { market: "рынок смартфонов", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Цены на ресурсы (издержки производства)", q2_explanation: "Кризис полупроводников привел к резкому подорожанию микрочипов. Издержки производителей выросли, и предложение на рынке смартфонов упало.", q3_text: "Как изменятся спрос и равновесная цена, если производители анонсируют выход принципиально новой модели в следующем месяце?", q3_ans: "D_down" },
+        { market: "рынок зимней верхней одежды", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Сезонность", q2_explanation: "Из-за аномально теплой зимы без морозов людям не потребовалось обновлять теплый гардероб, что вызвало падение спроса на рынке зимней верхней одежды.", q3_text: "Как изменятся предложение и равновесная цена, если изобретут новый дешевый синтетический утеплитель?", q3_ans: "S_up" },
+        { market: "рынок молочной продукции", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Цены на ресурсы", q2_explanation: "Из-за засухи цены на корма для коров значительно выросли. Издержки фермерских хозяйств увеличились, предложение на рынке молочной продукции сократилось.", q3_text: "Как изменятся спрос и равновесная цена, если правительство выдаст семьям сертификаты на бесплатное получение молока?", q3_ans: "D_up" },
+        { market: "рынок авиаперевозок", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Цены на ресурсы", q2_explanation: "На мировом рынке подорожало авиационное топливо. Затраты авиакомпаний выросли, они сократили число рейсов, и предложение на рынке авиаперевозок снизилось.", q3_text: "Как изменятся спрос и равновесная цена, если наступит сезон летних отпусков?", q3_ans: "D_up" },
+        { market: "рынок фитнес-услуг", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Уровень доходов потребителей", q2_explanation: "В условиях экономического спада реальные доходы населения снизились. Многие отказались от абонементов, спрос на рынке фитнес-услуг упал.", q3_text: "Как изменятся предложение и равновесная цена, если арендная плата за залы в торговых центрах значительно снизится?", q3_ans: "S_up" },
+        { market: "рынок электронных книг", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Цены на товары-заменители", q2_explanation: "Из-за подорожания бумаги цены на обычные печатные книги взлетели. Читатели перешли на цифровой формат, спрос на рынке электронных книг вырос.", q3_text: "Как изменятся предложение и равновесная цена, если появится новая программа, позволяющая легко верстать книги без издательств?", q3_ans: "S_up" },
+        { market: "рынок услуг такси", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Налоги и субсидии / государственная политика", q2_explanation: "Государство ввело обязательное дорогостоящее лицензирование. Многие водители не смогли выполнить требования и ушли из профессии, предложение на рынке услуг такси упало.", q3_text: "Как изменятся спрос и равновесная цена в день сильного снегопада и транспортного коллапса?", q3_ans: "D_up" },
+        { market: "рынок деревянной мебели", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Цены на ресурсы", q2_explanation: "На рынке образовался переизбыток дешевых пиломатериалов. Издержки фабрик на сырье упали, предложение на рынке деревянной мебели выросло.", q3_text: "Как изменятся спрос и равновесная цена, если в стране резко упадут темпы ввода нового жилья?", q3_ans: "D_down" },
+        { market: "рынок спортивного питания", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Вкусы и предпочтения потребителей", q2_explanation: "В обществе выросла популярность здорового образа жизни, люди стали чаще посещать тренажерные залы, что привело к росту спроса на рынке спортивного питания.", q3_text: "Как изменятся предложение и равновесная цена, если государство выделит гранты производителям спортпита?", q3_ans: "S_up" },
+        { market: "рынок отечественных автомобилей", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Цены на ресурсы", q2_explanation: "На мировых биржах подорожал листовой прокат. Затраты автозаводов на металл выросли, что привело к снижению предложения на рынке отечественных автомобилей.", q3_text: "Как изменятся спрос и равновесная цена, если государство запустит масштабную программу льготного автокредитования?", q3_ans: "D_up" },
+        { market: "рынок детских игрушек", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Численность и половозрастной состав покупателей", q2_explanation: "Снижение рождаемости в стране привело к уменьшению целевой аудитории потребителей, что вызвало падение спроса на рынке детских игрушек.", q3_text: "Как изменятся предложение и равновесная цена, если повысят ввозные пошлины на зарубежные игрушки?", q3_ans: "S_down" },
+        { market: "рынок шоколадных изделий", shiftType: "S", direction: -1, targetType: "предложение", q1_ans: "up", q2_factor: "Природно-климатические условия", q2_explanation: "Засуха в Африке вызвала неурожай какао-бобов. Возник дефицит сырья, фабрикам стало сложнее производить товар, предложение на рынке шоколадных изделий упало.", q3_text: "Как изменятся спрос и равновесная цена, если врачи опубликуют масштабное исследование о вреде сладкого для сердца?", q3_ans: "D_down" },
+        { market: "рынок услуг репетиторов", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Вкусы и предпочтения потребителей", q2_explanation: "Министерство образования сильно усложнило формат экзаменов. Родители стали активнее обращаться за дополнительной подготовкой, спрос на рынке услуг репетиторов вырос.", q3_text: "Как изменятся предложение и равновесная цена, если студентам вузов официально разрешат подрабатывать без уплаты налогов?", q3_ans: "S_up" },
+        { market: "рынок строительных материалов", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Технологии производства", q2_explanation: "Заводы внедрили новые энергосберегающие печи, что значительно снизило издержки производства и позволило увеличить предложение на рынке строительных материалов.", q3_text: "Как изменятся спрос и равновесная цена, если банки резко повысят ставки по кредитам для девелоперов?", q3_ans: "D_down" },
+        { market: "рынок антивирусного ПО", shiftType: "D", direction: 1, targetType: "спрос", q1_ans: "up", q2_factor: "Потребительские ожидания", q2_explanation: "Из-за массовых хакерских атак пользователи стали ожидать угрозы для своих данных и решили защититься, спрос на рынке антивирусного ПО взлетел.", q3_text: "Как изменятся предложение и равновесная цена, если государство запретит использование зарубежного софта в госструктурах?", q3_ans: "S_down" },
+        { market: "рынок мяса птицы", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Налоги и субсидии", q2_explanation: "Правительство выделило птицефабрикам крупные субсидии. Это позволило компаниям снизить издержки и расширить производство, предложение на рынке мяса птицы выросло.", q3_text: "Как изменятся спрос и равновесная цена, если в новостях появятся подтвержденные слухи о вспышке птичьего гриппа?", q3_ans: "D_down" },
+        { market: "рынок услуг кинотеатров", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Цены на товары-заменители", q2_explanation: "Подписки на стриминговые сервисы стали дешевле. Люди стали реже ходить в кино, предпочитая смотреть фильмы дома, спрос на рынке услуг кинотеатров упал.", q3_text: "Как изменятся предложение и равновесная цена, если из-за кризиса несколько крупных сетей кинотеатров обанкротятся и закроются?", q3_ans: "S_down" },
+        { market: "рынок ювелирных украшений", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Уровень доходов потребителей", q2_explanation: "В условиях инфляции реальные доходы населения упали. Украшения не являются товаром первой необходимости, поэтому спрос на рынке ювелирных украшений обвалился.", q3_text: "Как изменятся предложение и равновесная цена, если геологи откроют новые богатые месторождения золота и алмазов в стране?", q3_ans: "S_up" },
+        { market: "рынок клининговых услуг", shiftType: "S", direction: 1, targetType: "предложение", q1_ans: "down", q2_factor: "Количество продавцов на рынке", q2_explanation: "Низкий порог входа в бизнес привлек множество предпринимателей. Появление новых компаний увеличило суммарное предложение на рынке клининговых услуг.", q3_text: "Как изменятся спрос и равновесная цена, если начнется массовое строительство и ввод в эксплуатацию новых офисных центров?", q3_ans: "D_up" },
+        { market: "рынок бумажной канцелярии", shiftType: "D", direction: -1, targetType: "спрос", q1_ans: "down", q2_factor: "Вкусы и предпочтения потребителей", q2_explanation: "Офисы и школы стали переходить на электронный документооборот, из-за чего потребность людей в использовании обычной бумаги снизилась, спрос на рынке бумажной канцелярии упал.", q3_text: "Как изменятся предложение и равновесная цена, если тарифы на электричество для целлюлозных комбинатов существенно возрастут?", q3_ans: "S_down" }
     ];
 
     function shuffleArray(array) {
@@ -463,6 +481,165 @@
     const canvas = document.getElementById('graphCanvas');
     const ctx = canvas.getContext('2d');
     const config = { originX: 70, originY: 480, scaleQ: 6.0, scaleP: 4.0, lineWidth: 6 }; 
+
+    let isDragging = false;
+    let dragCurveType = null;
+    let dragStartX = 0;
+    let startShift = 0;
+    let shifts = { D: 0, D1: 0, S: 0, S1: 0 };
+    let hideOverlayTimeout = null;
+
+    function getLogicalCoords(evt) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = 800 / rect.width;
+        const scaleY = 550 / rect.height;
+        let clientX = evt.clientX;
+        let clientY = evt.clientY;
+        if (evt.touches && evt.touches.length > 0) {
+            clientX = evt.touches[0].clientX;
+            clientY = evt.touches[0].clientY;
+        }
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    function onPointerDown(evt) {
+        const loc = getLogicalCoords(evt);
+        const q = (loc.x - config.originX) / config.scaleQ;
+        const p = (config.originY - loc.y) / config.scaleP;
+        const s = scenarios[currentIndex];
+        let targets = [];
+        
+        if (s.shiftType === 'D') {
+            targets.push({ id: 'D', isD: true, shift: shifts.D });
+            targets.push({ id: 'D1', isD: true, shift: task_d_shift + shifts.D1 });
+            targets.push({ id: 'S', isD: false, shift: shifts.S });
+        } else {
+            targets.push({ id: 'S', isD: false, shift: shifts.S });
+            targets.push({ id: 'S1', isD: false, shift: task_s_shift + shifts.S1 });
+            targets.push({ id: 'D', isD: true, shift: shifts.D });
+        }
+
+        targets.forEach(t => {
+            t.dist = t.isD ? Math.abs(p + q - 100 - t.shift) / Math.SQRT2 : Math.abs(p - q + t.shift) / Math.SQRT2;
+        });
+
+        targets.sort((a, b) => a.dist - b.dist);
+        let closest = targets[0];
+
+        if (closest.dist < 15) {
+            isDragging = true;
+            dragStartX = loc.x;
+            dragCurveType = closest.id;
+            startShift = shifts[closest.id];
+            clearTimeout(hideOverlayTimeout);
+            if (evt.cancelable) evt.preventDefault();
+        }
+    }
+
+    function updateInteractiveOverlay() {
+        const s = scenarios[currentIndex];
+        let isDragD = (dragCurveType === 'D' || dragCurveType === 'D1');
+        let currentShiftVal = shifts[dragCurveType];
+        
+        let otherShift = 0;
+        if (isDragD) {
+            otherShift = (s.shiftType === 'S') ? task_s_shift + shifts.S1 : shifts.S;
+        } else {
+            otherShift = (s.shiftType === 'D') ? task_d_shift + shifts.D1 : shifts.D;
+        }
+
+        let baseEq = isDragD ? getEquilibrium(0 + (dragCurveType==='D1'?task_d_shift:0), otherShift) : getEquilibrium(otherShift, 0 + (dragCurveType==='S1'?task_s_shift:0));
+        let currD = isDragD ? (dragCurveType==='D1'?task_d_shift+currentShiftVal:currentShiftVal) : otherShift;
+        let currS = !isDragD ? (dragCurveType==='S1'?task_s_shift+currentShiftVal:currentShiftVal) : otherShift;
+        let currentEq = getEquilibrium(currD, currS);
+
+        let priceChange = currentEq.p > baseEq.p + 0.5 ? "выросла" : (currentEq.p < baseEq.p - 0.5 ? "упала" : "не изменилась");
+        let priceIcon = currentEq.p > baseEq.p + 0.5 ? '<i class="fas fa-arrow-up text-blue-500"></i>' : (currentEq.p < baseEq.p - 0.5 ? '<i class="fas fa-arrow-down text-blue-500"></i>' : '');
+
+        let shiftText = "";
+        let shiftIcon = "";
+        if (isDragD) {
+            if (currentShiftVal > 1) { shiftText = "Спрос вырос"; shiftIcon = '<i class="fas fa-arrow-right text-blue-500"></i>'; }
+            else if (currentShiftVal < -1) { shiftText = "Спрос упал"; shiftIcon = '<i class="fas fa-arrow-left text-blue-500"></i>'; }
+            else shiftText = "Спрос не изменился";
+        } else {
+            if (currentShiftVal > 1) { shiftText = "Предложение выросло"; shiftIcon = '<i class="fas fa-arrow-right text-red-500"></i>'; }
+            else if (currentShiftVal < -1) { shiftText = "Предложение упало"; shiftIcon = '<i class="fas fa-arrow-left text-red-500"></i>'; }
+            else shiftText = "Предложение не изменилось"; 
+        }
+
+        if (shiftText) {
+            document.getElementById('io-shift-text').innerHTML = `${shiftText} ${shiftIcon}`;
+            document.getElementById('io-price-text').innerHTML = `Равновесная цена ${priceChange} ${priceIcon}`;
+            els.interactiveOverlay.classList.remove('opacity-0');
+        }
+    }
+
+    function onPointerMove(evt) {
+        if (!isDragging) return;
+        if (evt.cancelable) evt.preventDefault();
+        const loc = getLogicalCoords(evt);
+        const deltaX = loc.x - dragStartX;
+        const deltaQ = deltaX / config.scaleQ;
+
+        shifts[dragCurveType] = Math.max(-60, Math.min(60, startShift + deltaQ));
+        
+        updateInteractiveOverlay();
+        drawGraph();
+    }
+
+    function onPointerUp(evt) {
+        if (isDragging) {
+            isDragging = false;
+            clearTimeout(hideOverlayTimeout);
+            hideOverlayTimeout = setTimeout(() => {
+                if (!isDragging) els.interactiveOverlay.classList.add('opacity-0');
+            }, 2500);
+        }
+    }
+
+    canvas.addEventListener('mousedown', onPointerDown);
+    canvas.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    canvas.addEventListener('touchstart', onPointerDown, {passive: false});
+    canvas.addEventListener('touchmove', onPointerMove, {passive: false});
+    window.addEventListener('touchend', onPointerUp);
+    window.addEventListener('touchcancel', onPointerUp);
+
+    function resizeCanvas() {
+        const container = canvas.parentElement;
+        const rect = container.getBoundingClientRect();
+        const padding = window.innerWidth >= 768 ? 24 : 8;
+        const availableWidth = rect.width - padding * 2;
+        const availableHeight = rect.height - padding * 2;
+        
+        if (availableWidth <= 0 || availableHeight <= 0) return;
+        
+        const containerRatio = availableWidth / availableHeight;
+        const canvasRatio = 800 / 550;
+        
+        let displayWidth, displayHeight;
+        if (containerRatio > canvasRatio) {
+            displayHeight = availableHeight;
+            displayWidth = availableHeight * canvasRatio;
+        } else {
+            displayWidth = availableWidth;
+            displayHeight = availableWidth / canvasRatio;
+        }
+        
+        canvas.style.width = displayWidth + 'px';
+        canvas.style.height = displayHeight + 'px';
+        
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = displayWidth * dpr;
+        canvas.height = displayHeight * dpr;
+        
+        ctx.scale((displayWidth * dpr) / 800, (displayHeight * dpr) / 550);
+        drawGraph();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
 
     function getCoords(q, p) { return { x: config.originX + q * config.scaleQ, y: config.originY - p * config.scaleP }; }
     function getEquilibrium(d_shift, s_shift) { let q = 50 + (d_shift + s_shift) / 2; let p = q - s_shift; return {q, p}; }
@@ -503,18 +680,18 @@
     };
 
     function drawGraph() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, 800, 550);
         ctx.beginPath(); ctx.strokeStyle = '#f3f4f6'; ctx.lineWidth = 2;
-        for(let i=1; i<12; i++) { let y = config.originY - i*40; let x = config.originX + i*60; ctx.moveTo(config.originX, y); ctx.lineTo(canvas.width-10, y); ctx.moveTo(x, config.originY); ctx.lineTo(x, 10); }
+        for(let i=1; i<12; i++) { let y = config.originY - i*40; let x = config.originX + i*60; ctx.moveTo(config.originX, y); ctx.lineTo(800-10, y); ctx.moveTo(x, config.originY); ctx.lineTo(x, 10); }
         ctx.stroke();
         ctx.beginPath(); ctx.strokeStyle = '#111827'; ctx.lineWidth = 4;
         ctx.moveTo(config.originX, config.originY); ctx.lineTo(config.originX, 10);
         ctx.lineTo(config.originX - 8, 22); ctx.moveTo(config.originX, 10); ctx.lineTo(config.originX + 8, 22);
-        ctx.moveTo(config.originX, config.originY); ctx.lineTo(canvas.width - 15, config.originY);
-        ctx.lineTo(canvas.width - 27, config.originY - 8); ctx.moveTo(canvas.width - 15, config.originY); ctx.lineTo(canvas.width - 27, config.originY + 8);
+        ctx.moveTo(config.originX, config.originY); ctx.lineTo(800 - 15, config.originY);
+        ctx.lineTo(800 - 27, config.originY - 8); ctx.moveTo(800 - 15, config.originY); ctx.lineTo(800 - 27, config.originY + 8);
         ctx.stroke();
         ctx.fillStyle = '#111827'; ctx.font = 'bold 24px Inter';
-        ctx.fillText('P', config.originX - 35, 25); ctx.fillText('Q', canvas.width - 30, config.originY + 30);
+        ctx.fillText('P', config.originX - 35, 25); ctx.fillText('Q', 800 - 30, config.originY + 30);
         ctx.font = '20px Inter'; ctx.fillText('0', config.originX - 22, config.originY + 22);
         const s = scenarios[currentIndex];
         if (s.shiftType === 'D') {
@@ -545,6 +722,23 @@
             ctx.fillStyle = '#059669'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
             ctx.fillStyle = '#059669'; ctx.font = 'bold 20px Inter'; ctx.fillText('E2', eq2Coords.x + 12, eq2Coords.y - 12);
         }
+
+        let hasInteractive = interactive_d_shift !== 0 || interactive_s_shift !== 0;
+        if (hasInteractive) {
+            let totalD = task_d_shift + interactive_d_shift;
+            let totalS = task_s_shift + interactive_s_shift;
+            if (interactive_d_shift !== 0) drawBoundedCurve(true, totalD, '#a855f7', 'D(инт)', true); 
+            if (interactive_s_shift !== 0) drawBoundedCurve(false, totalS, '#f59e0b', 'S(инт)', true); 
+            
+            let eqInter = getEquilibrium(totalD, totalS);
+            let eqInterCoords = getCoords(eqInter.q, eqInter.p);
+            ctx.beginPath(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#a855f7'; ctx.lineWidth = 2;
+            ctx.moveTo(config.originX, eqInterCoords.y); ctx.lineTo(eqInterCoords.x, eqInterCoords.y);
+            ctx.moveTo(eqInterCoords.x, config.originY); ctx.lineTo(eqInterCoords.x, eqInterCoords.y); ctx.stroke(); ctx.setLineDash([]);
+            ctx.beginPath(); ctx.arc(eqInterCoords.x, eqInterCoords.y, 8, 0, Math.PI * 2);
+            ctx.fillStyle = '#a855f7'; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#a855f7'; ctx.font = 'bold 16px Inter'; ctx.fillText('E_new', eqInterCoords.x + 12, eqInterCoords.y - 12);
+        }
     }
 
     function loadScenario(idx) {
@@ -554,13 +748,15 @@
         els.q3Scenario.textContent = s.q3_text;
         task_d_shift = s.shiftType === 'D' ? s.direction * 30 : 0;
         task_s_shift = s.shiftType === 'S' ? s.direction * 30 : 0;
-        resetUI(); drawGraph();
+        resetUI(); resizeCanvas();
     }
 
     function resetUI() {
         els.q1Radios.forEach(r => r.checked = false); els.q1Fb.className = 'mt-2 p-1.5 rounded text-[11px] md:text-[12px] hidden font-medium flex items-center gap-1';
         els.q2Input.value = ''; els.aiResultBox.classList.add('hidden'); els.q2IdealBox.classList.add('hidden'); els.aiLoading.classList.add('hidden');
         q3Mode = false; userQ3Shift = null; userQ3Price = null;
+        shifts = { D: 0, D1: 0, S: 0, S1: 0 };
+        els.interactiveOverlay.classList.add('opacity-0');
         els.q3ShiftBtns.forEach(btn => btn.classList.remove('selected-active', 'selected-correct', 'selected-wrong'));
         els.q3PriceBtns.forEach(btn => btn.classList.remove('selected-active', 'selected-correct', 'selected-wrong'));
         els.q3Fb.className = 'mt-2 p-2 rounded text-[10px] md:text-[12px] hidden font-medium';
@@ -572,7 +768,14 @@
     els.btnCloseGuide.onclick = () => els.guideModal.classList.add('hidden');
     els.guideModal.onclick = (e) => { if(e.target === els.guideModal) els.guideModal.classList.add('hidden'); };
 
-    els.btnReset.addEventListener('click', () => { q3Mode = false; userQ3Shift = null; userQ3Price = null; els.q3ShiftBtns.forEach(b => b.classList.remove('selected-active')); els.q3PriceBtns.forEach(b => b.classList.remove('selected-active')); drawGraph(); });
+    els.btnReset.addEventListener('click', () => { 
+        q3Mode = false; userQ3Shift = null; userQ3Price = null; 
+        shifts = { D: 0, D1: 0, S: 0, S1: 0 };
+        els.interactiveOverlay.classList.add('opacity-0');
+        els.q3ShiftBtns.forEach(b => b.classList.remove('selected-active')); 
+        els.q3PriceBtns.forEach(b => b.classList.remove('selected-active')); 
+        drawGraph(); 
+    });
 
     els.q1Radios.forEach(r => {
         r.addEventListener('change', e => {
@@ -692,7 +895,12 @@
         finally { els.btnAiCheck.disabled = false; }
     });
 
-    els.btnQ2Ideal.onclick = () => { const s = scenarios[currentIndex]; els.q2Factor.textContent = s.q2_factor; els.q2Exp.textContent = s.q2_explanation; els.q2IdealBox.classList.remove('hidden'); els.q2IdealBox.classList.add('fade-in'); };
+    els.btnQ2Ideal.onclick = () => { 
+        const s = scenarios[currentIndex]; 
+        els.q2Combined.innerHTML = `<b>${s.q2_factor}.</b> ${s.q2_explanation}`; 
+        els.q2IdealBox.classList.remove('hidden'); 
+        els.q2IdealBox.classList.add('fade-in'); 
+    };
 
     function showBreakModal() {
         els.breakModal.classList.remove('hidden'); els.breakModal.classList.add('flex');
