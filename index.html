@@ -357,7 +357,7 @@
     </main>
 
 <script>
-    // Инициализация API ключа из локального хранилища браузера
+    const PROXY_URL = "https://script.google.com/macros/s/AKfycbyxopW-3Fq2C7-vp3Av6IPaUjq2SLdSG-BgdA86N-1YWIvp_su7NC8IsMbMM1WEYmx-/exec"; 
     let apiKey = localStorage.getItem('gemini_api_key') || "";
 
     const els = {
@@ -386,7 +386,7 @@
     };
 
     // --- Логика управления ключом API ---
-    if (!apiKey) {
+    if (!apiKey && !PROXY_URL) {
         els.apiKeyModal.classList.remove('hidden');
         els.apiKeyModal.classList.add('flex');
         els.btnSkipKey.classList.remove('hidden');
@@ -872,7 +872,7 @@
     }
 
     els.btnAiCheck.addEventListener('click', async () => {
-        if (!apiKey) {
+        if (!apiKey && !PROXY_URL) {
             els.btnOpenSettings.click();
             return;
         }
@@ -887,7 +887,20 @@
         const payload = { systemInstruction: { parts: [{ text: sysInstruction }] }, contents: [{ parts: [{ text: `Ответ: "${userAnswer}"` }] }], generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { factor_correct: { type: "BOOLEAN" }, explanation_detailed: { type: "BOOLEAN" }, market_mentioned: { type: "BOOLEAN" }, expert_comment: { type: "STRING" } } } } };
         
         try {
-            const result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            let result;
+            if (PROXY_URL) {
+                result = await fetchWithRetry(PROXY_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify(payload) 
+                });
+            } else {
+                result = await fetchWithRetry(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(payload) 
+                });
+            }
             
             let rawText = result.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
             rawText = rawText.replace(/```json\n?/g, '').replace(/```/g, '').trim();
